@@ -10,7 +10,8 @@ from datetime import datetime
 
 # Local imports
 from config import app, db, api
-from models import User, Reading, Medication, Meal, reading_meals
+from models import User, Reading, Medication, Meal, Doctor, reading_meals
+from schemas import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
 
 # ---------------- Basic route ----------------
 
@@ -51,7 +52,8 @@ class Signup(Resource):
             return {
                 'user': user.to_dict(),
                 'access_token': access_token,
-                'education': education_for(user.diabetes_type)
+                'education': education_for(user.diabetes_type),
+                'advice': advice_for(user)
             }, 201
             
         except Exception as e:
@@ -72,7 +74,8 @@ class Login(Resource):
             return {
                 'user': user.to_dict(),
                 'access_token': access_token,
-                'education': education_for(user.diabetes_type)
+                'education': education_for(user.diabetes_type),
+                'advice': advice_for(user)
             }, 200
         else:
             return {'error': 'Invalid email or password'}, 401
@@ -86,6 +89,7 @@ class CheckSession(Resource):
         if user:
             resp = user.to_dict()
             resp['education'] = education_for(user.diabetes_type)
+            resp['advice'] = advice_for(user)
             return resp, 200
         else:
             return {'error': 'User not found'}, 404
@@ -132,6 +136,79 @@ EDU = {
 def education_for(diabetes_type):
     return EDU.get((diabetes_type or '').lower(), [])
 
+# ---------------- Personalized advice (nutrition/exercise/medication) ----------------
+def bmi_category_for(height_cm, weight_kg):
+    try:
+        if not height_cm or not weight_kg:
+            return None
+        h = float(height_cm) / 100.0
+        bmi = float(weight_kg) / (h ** 2)
+        if bmi < 18.5:
+            return 'Underweight'
+        elif bmi < 25:
+            return 'Normal'
+        elif bmi < 30:
+            return 'Overweight'
+        else:
+            return 'Obese'
+    except Exception:
+        return None
+
+def advice_for(user):
+    """Return a dict with nutrition/exercise/medication tips customized by diabetes_type and BMI."""
+    dtype = (user.diabetes_type or '').lower()
+    bmi_cat = bmi_category_for(user.height_cm, user.weight_kg)
+    base_nutrition = [
+        'Prioritize whole foods: vegetables, lean proteins, healthy fats.',
+        'Choose low-glycemic carbs and adequate fiber.',
+        'Balance plates: half non-starchy veg, quarter protein, quarter carbs.'
+    ]
+    base_exercise = [
+        'Aim for 150+ minutes/week of moderate activity (e.g., brisk walking).',
+        'Add 2–3 days/week of resistance training if able.',
+        'Light movement after meals (10–15 min) can help post-meal glucose.'
+    ]
+    base_med = [
+        'Take medications exactly as prescribed.',
+        'Discuss changes or side effects with your clinician.',
+        'Never adjust insulin/meds without medical guidance.'
+    ]
+
+    # Adjust by diabetes type
+    if dtype == 'type1':
+        base_nutrition += ['Count carbohydrates and match insulin appropriately.']
+        base_exercise += ['Monitor glucose before/after exercise; carry fast-acting carbs.']
+        base_med += ['Review basal/bolus strategy and correction factors with your care team.']
+    elif dtype == 'type2':
+        base_nutrition += ['Focus on weight management and portion control.']
+        base_exercise += ['Build consistency; short daily walks are very effective.']
+        base_med += ['Metformin adherence and timing can matter; ask about alternatives if GI side effects.']
+    elif dtype == 'gestational':
+        base_nutrition += ['Follow pregnancy meal plan and carb targets from your clinician.']
+        base_exercise += ['Prefer low-impact activity as approved by your provider.']
+        base_med += ['Frequent monitoring and close coordination with your obstetric team.']
+    elif dtype == 'prediabetes':
+        base_nutrition += ['Reduce sugary drinks and refined carbs; emphasize fiber.']
+        base_exercise += ['Accumulate movement throughout the day; aim for daily consistency.']
+        base_med += ['Lifestyle changes are first-line; discuss medication only if advised.']
+
+    # Adjust by BMI category if available
+    if bmi_cat == 'Underweight':
+        base_nutrition += ['Ensure adequate calories and protein; seek a dietitian if losing weight unintentionally.']
+    elif bmi_cat == 'Overweight':
+        base_nutrition += ['Create a modest calorie deficit; consider smaller plates and mindful eating.']
+        base_exercise += ['Start gently and build up duration; track steps to motivate progress.']
+    elif bmi_cat == 'Obese':
+        base_nutrition += ['Work with your clinician on a structured weight-loss plan; consider dietitian support.']
+        base_exercise += ['Low-impact options (walking, cycling, swimming) reduce joint stress; progress gradually.']
+
+    return {
+        'nutrition': base_nutrition,
+        'exercise': base_exercise,
+        'medication': base_med,
+        'bmi_category': bmi_cat,
+    }
+
 # ---------------- Glucose evaluation ----------------
 TIPS_NORMAL = [
     'Maintain balanced meals with non-starchy veggies, lean protein, and healthy fats.',
@@ -164,13 +241,24 @@ def evaluate_glucose(value, context):
             status, color, suggestions = 'high', 'red', TIPS_HIGH
     return {'status': status, 'color': color, 'suggestions': suggestions}
 
+# ---------------- Schemas ----------------
+user_schema = UserSchema()
+reading_schema = ReadingSchema()
+readings_schema = ReadingSchema(many=True)
+medication_schema = MedicationSchema()
+medications_schema = MedicationSchema(many=True)
+meal_schema = MealSchema()
+meals_schema = MealSchema(many=True)
+doctor_schema = DoctorSchema()
+doctors_schema = DoctorSchema(many=True)
+
 # ---------------- Readings CRUD ----------------
 class Readings(Resource):
     @jwt_required()
     def get(self):
         user_id = get_jwt_identity()
         items = Reading.query.filter_by(user_id=user_id).order_by(Reading.date, Reading.time).all()
-        return [r.to_dict() for r in items], 200
+        return readings_schema.dump(items), 200
 
     @jwt_required()
     def post(self):
@@ -195,7 +283,7 @@ class Readings(Resource):
             )
             db.session.add(reading)
             db.session.commit()
-            payload = reading.to_dict()
+            payload = reading_schema.dump(reading)
             if context:
                 payload['evaluation'] = evaluate_glucose(reading.value, context)
             return payload, 201
@@ -210,7 +298,7 @@ class ReadingById(Resource):
         reading = Reading.query.filter_by(id=id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
-        payload = reading.to_dict()
+        payload = reading_schema.dump(reading)
         if reading.context:
             payload['evaluation'] = evaluate_glucose(reading.value, reading.context)
         return payload, 200
@@ -238,7 +326,7 @@ class ReadingById(Resource):
             reading.context = data['context']
         try:
             db.session.commit()
-            payload = reading.to_dict()
+            payload = reading_schema.dump(reading)
             if reading.context:
                 payload['evaluation'] = evaluate_glucose(reading.value, reading.context)
             return payload, 200
@@ -273,6 +361,9 @@ class UserProfile(Resource):
             user.name = data['name']
         if 'diabetes_type' in data:
             user.diabetes_type = data['diabetes_type'] or None
+        if 'doctor_id' in data:
+            # allow unassigning by sending null
+            user.doctor_id = data['doctor_id']
         if 'height_cm' in data:
             try:
                 user.height_cm = float(data['height_cm']) if data['height_cm'] is not None else None
@@ -285,7 +376,10 @@ class UserProfile(Resource):
                 return {'error': 'weight_kg must be a number'}, 400
         try:
             db.session.commit()
-            return user.to_dict(), 200
+            resp = user_schema.dump(user)
+            resp['education'] = education_for(user.diabetes_type)
+            resp['advice'] = advice_for(user)
+            return resp, 200
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 400
@@ -326,7 +420,7 @@ class Medications(Resource):
     def get(self):
         user_id = get_jwt_identity()
         meds = Medication.query.filter_by(user_id=user_id).order_by(Medication.time).all()
-        return [m.to_dict() for m in meds], 200
+        return medications_schema.dump(meds), 200
 
     @jwt_required()
     def post(self):
@@ -345,7 +439,7 @@ class Medications(Resource):
             )
             db.session.add(med)
             db.session.commit()
-            return med.to_dict(), 201
+            return medication_schema.dump(med), 201
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 400
@@ -370,7 +464,7 @@ class MedicationById(Resource):
             med.dose = data['dose'].strip()
         try:
             db.session.commit()
-            return med.to_dict(), 200
+            return medication_schema.dump(med), 200
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 400
@@ -388,7 +482,7 @@ class Meals(Resource):
         # For simplicity, we'll return all meals the user created in this app context.
         # If meals are global, you could return all.
         meals = Meal.query.order_by(Meal.created_at.desc()).all()
-        return [m.to_dict() for m in meals], 200
+        return meals_schema.dump(meals), 200
 
     @jwt_required()
     def post(self):
@@ -403,7 +497,7 @@ class Meals(Resource):
         try:
             db.session.add(meal)
             db.session.commit()
-            return meal.to_dict(), 201
+            return meal_schema.dump(meal), 201
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 400
@@ -462,6 +556,37 @@ class ReadingMeals(Resource):
 
 api.add_resource(ReadingMeals, '/readings/<int:reading_id>/meals')
 
-if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+# ---------------- Doctors (create/list and list patients) ----------------
+class Doctors(Resource):
+    def get(self):
+        items = Doctor.query.order_by(Doctor.id.desc()).all()
+        return doctors_schema.dump(items), 200
 
+    def post(self):
+        data = request.get_json()
+        if not data or not data.get('name') or not data.get('email'):
+            return {'error': 'name and email are required'}, 400
+        if Doctor.query.filter_by(email=data['email']).first():
+            return {'error': 'Doctor with this email already exists'}, 400
+        try:
+            doc = Doctor(name=data['name'].strip(), email=data['email'].strip())
+            db.session.add(doc)
+            db.session.commit()
+            return doctor_schema.dump(doc), 201
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+
+class DoctorPatients(Resource):
+    def get(self, doctor_id):
+        doc = Doctor.query.get(doctor_id)
+        if not doc:
+            return {'error': 'Doctor not found'}, 404
+        patients = [u.to_dict() for u in doc.patients]
+        return {'doctor': doctor_schema.dump(doc), 'patients': patients}, 200
+
+api.add_resource(Doctors, '/doctors')
+api.add_resource(DoctorPatients, '/doctors/<int:doctor_id>/patients')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5555, debug=True)

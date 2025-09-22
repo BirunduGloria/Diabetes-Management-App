@@ -22,6 +22,26 @@ function evaluateGlucose(value, context) {
   return { status: 'high', color: 'crimson' };
 }
 
+// Simple suggestions aligned with backend logic
+const TIPS_NORMAL = [
+  'Maintain balanced meals with non-starchy veggies, lean protein, and healthy fats.',
+  'Stay hydrated and keep up light daily activity.',
+  'Aim for consistent meal times and portion control.',
+];
+const TIPS_HIGH = [
+  'Take a 15–30 minute walk and hydrate with water.',
+  'Reduce refined carbohydrates; choose low-GI, high-fiber foods.',
+  'Include lean proteins and healthy fats to slow glucose spikes.',
+  'Discuss supplements with your doctor (e.g., cinnamon, berberine).',
+];
+
+function suggestionsFor(value, context) {
+  const { status } = evaluateGlucose(value, context);
+  if (status === 'normal') return TIPS_NORMAL;
+  if (status === 'high') return TIPS_HIGH;
+  return [];
+}
+
 export default function Readings() {
   const { token } = useAuth();
   const [items, setItems] = useState([]);
@@ -83,55 +103,76 @@ export default function Readings() {
 
   return (
     <div>
-      <h2>Readings</h2>
+      <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
+        <div className="crumb">
+          <span>Home</span>
+          <span className="sep">›</span>
+          <b>Readings</b>
+        </div>
+        <div className="accent-line" />
+      </div>
 
-      <Formik
-        initialValues={{ value: '', date: '', time: '', context: '', notes: '' }}
-        validationSchema={ReadingSchema}
-        onSubmit={handleCreate}
-      >
-        {({ isSubmitting, status }) => (
-          <Form style={{ display: 'grid', gap: 8, marginBottom: 24 }}>
-            <label>Value (mg/dL)</label>
-            <Field name="value" type="number" step="1" />
-            <div style={{ color: 'crimson' }}><ErrorMessage name="value" /></div>
+      <div className="card section">
+        <h2 style={{ marginTop: 0 }}>Add Reading</h2>
+        <Formik
+          initialValues={{ value: '', date: '', time: '', context: '', notes: '' }}
+          validationSchema={ReadingSchema}
+          onSubmit={handleCreate}
+        >
+          {({ isSubmitting, status }) => (
+            <Form className="space-y">
+              <label>Value (mg/dL)</label>
+              <Field name="value" type="number" step="1" />
+              <div className="error"><ErrorMessage name="value" /></div>
 
-            <label>Date</label>
-            <Field name="date" type="date" />
-            <div style={{ color: 'crimson' }}><ErrorMessage name="date" /></div>
+              <label>Date</label>
+              <Field name="date" type="date" />
+              <div className="error"><ErrorMessage name="date" /></div>
 
-            <label>Time</label>
-            <Field name="time" type="time" />
-            <div style={{ color: 'crimson' }}><ErrorMessage name="time" /></div>
+              <label>Time</label>
+              <Field name="time" type="time" />
+              <div className="error"><ErrorMessage name="time" /></div>
 
-            <label>Context (optional)</label>
-            <Field as="select" name="context">
-              <option value="">Select</option>
-              <option value="pre_meal">Pre-meal</option>
-              <option value="post_meal">Post-meal</option>
-            </Field>
-            <div style={{ color: 'crimson' }}><ErrorMessage name="context" /></div>
+              <label>Context (optional)</label>
+              <Field as="select" name="context">
+                <option value="">Select</option>
+                <option value="pre_meal">Pre-meal</option>
+                <option value="post_meal">Post-meal</option>
+              </Field>
+              <div className="error"><ErrorMessage name="context" /></div>
 
-            <label>Notes (optional)</label>
-            <Field name="notes" as="textarea" rows={2} />
+              <label>Notes (optional)</label>
+              <Field name="notes" as="textarea" rows={2} />
 
-            {status && <div style={{ color: 'crimson' }}>{status}</div>}
-            <button type="submit" disabled={isSubmitting}>Add Reading</button>
-          </Form>
-        )}
-      </Formik>
+              {status && <div className="error">{status}</div>}
+              <button className="btn" type="submit" disabled={isSubmitting}>Add Reading</button>
+            </Form>
+          )}
+        </Formik>
+      </div>
 
-      {error && <div style={{ color: 'crimson' }}>{error}</div>}
+      {error && <div className="error card" style={{ padding: 12, marginBottom: 12 }}>{error}</div>}
 
-      <ul style={{ padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
+      <ul className="list">
         {items.map(r => {
           const { status, color } = evaluateGlucose(r.value, r.context);
+          const tips = (r.evaluation && r.evaluation.suggestions) ? r.evaluation.suggestions : suggestionsFor(r.value, r.context);
           return (
-            <li key={r.id} style={{ border: '1px solid #eee', padding: 8, borderLeft: `6px solid ${color}` }}>
+            <li key={r.id} className="list-item" style={{ borderLeft: `6px solid ${color}` }}>
               <div><strong>{r.date}</strong> {r.time?.slice(0,5)} — {r.context || 'n/a'}</div>
               <div>Value: <strong style={{ color }}>{r.value}</strong> ({status})</div>
               {r.notes && <div>Notes: {r.notes}</div>}
-              <button onClick={() => handleDelete(r.id)} style={{ marginTop: 6 }}>Delete</button>
+              {tips.length > 0 && (
+                <div style={{ marginTop: 6 }}>
+                  <div style={{ fontWeight: 600 }}>Suggestions</div>
+                  <ul>
+                    {tips.map((t, i) => (
+                      <li key={i}>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <button className="btn btn-outline" onClick={() => handleDelete(r.id)} style={{ marginTop: 6 }}>Delete</button>
             </li>
           );
         })}

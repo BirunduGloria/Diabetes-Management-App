@@ -13,6 +13,24 @@ reading_meals = db.Table('reading_meals',
     db.Column('created_at', DateTime, default=datetime.utcnow)
 )
 
+class Doctor(db.Model):
+    __tablename__ = 'doctors'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = DateTime
+
+    # Relationships
+    patients = db.relationship('User', back_populates='doctor', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+        }
+
 # Users of the app
 class User(db.Model):
     __tablename__ = 'users'
@@ -27,10 +45,13 @@ class User(db.Model):
     height_cm = db.Column(db.Float, nullable=True)
     weight_kg = db.Column(db.Float, nullable=True)
     created_at = db.Column(DateTime, default=datetime.utcnow)
+    # One doctor per user (optional)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=True)
     
     # Relationships
     readings = db.relationship('Reading', backref='user', lazy=True, cascade='all, delete-orphan')
     medications = db.relationship('Medication', backref='user', lazy=True, cascade='all, delete-orphan')
+    doctor = db.relationship('Doctor', back_populates='patients')
     
     @hybrid_property
     def password_hash(self):
@@ -53,6 +74,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'diabetes_type': self.diabetes_type,
+            'doctor_id': self.doctor_id,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
     

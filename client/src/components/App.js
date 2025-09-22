@@ -30,7 +30,7 @@ function App() {
     <AuthProvider>
       <Router>
         <NavBar />
-        <div style={{ maxWidth: 600, margin: "24px auto", padding: "0 16px" }}>
+        <div className="container">
           <Switch>
             <Route path="/login">
               <Login />

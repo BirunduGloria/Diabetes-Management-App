@@ -12,6 +12,10 @@ export function AuthProvider({ children }) {
     const raw = localStorage.getItem('education');
     return raw ? JSON.parse(raw) : [];
   });
+  const [advice, setAdvice] = useState(() => {
+    const raw = localStorage.getItem('advice');
+    return raw ? JSON.parse(raw) : { nutrition: [], exercise: [], medication: [], bmi_category: null };
+  });
   const isAuthed = Boolean(token && user);
 
   // Persist to localStorage
@@ -24,6 +28,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (education) localStorage.setItem('education', JSON.stringify(education)); else localStorage.removeItem('education');
   }, [education]);
+  useEffect(() => {
+    if (advice) localStorage.setItem('advice', JSON.stringify(advice)); else localStorage.removeItem('advice');
+  }, [advice]);
 
   // Try to restore session
   useEffect(() => {
@@ -35,15 +42,17 @@ export function AuthProvider({ children }) {
         });
         if (res.ok) {
           const data = await res.json();
-          // data may include { ...userFields, education: [...] }
-          const { education, ...userData } = data || {};
+          // data may include { ...userFields, education: [...], advice: {...} }
+          const { education: edu, advice: adv, ...userData } = data || {};
           setUser(userData || null);
-          if (education) setEducation(education);
+          if (edu) setEducation(edu);
+          if (adv) setAdvice(adv);
         } else {
           // token invalid
           setToken(null);
           setUser(null);
           setEducation([]);
+          setAdvice({ nutrition: [], exercise: [], medication: [], bmi_category: null });
         }
       } catch (e) {
         console.error(e);
@@ -56,14 +65,17 @@ export function AuthProvider({ children }) {
     token,
     user,
     education,
+    advice,
     isAuthed,
     setToken,
     setUser,
     setEducation,
+    setAdvice,
     logout: () => {
       setToken(null);
       setUser(null);
       setEducation([]);
+      setAdvice({ nutrition: [], exercise: [], medication: [], bmi_category: null });
       localStorage.clear();
     },
   };
