@@ -45,3 +45,11 @@ Content-Type: application/json
     "email":"testuser@admin.com"
 }
 ###
+
+POST http://localhost:5556/login
+Content-Type: application/json
+{
+    "email": "testuser@admin.com",
+    "password": "testpassword",
+    "diabetes_type": "Type 1",
+}
