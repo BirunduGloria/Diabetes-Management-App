@@ -1,167 +1,141 @@
-# Phase 4 Full-Stack Application Project Template
+# 🇰🇪 Kenyan Diabetes Management App
 
-## Learning Goals
+A culturally-adapted diabetes management platform designed specifically for Kenyan patients, offering bilingual support (English/Swahili), local food insights, and AI-powered glucose predictions.
 
-- Discuss the basic directory structure of a full-stack Flask/React application.
-- Carry out the first steps in creating your Phase 4 project.
+## 🎯 Project Overview
 
----
+This full-stack application addresses the unique needs of Kenya's 458,000+ diabetes patients through localized content, gamification, and smart healthcare integration. Built with Flask (backend) and React (frontend), it provides a comprehensive diabetes management solution that understands Kenyan culture, food, and healthcare system.
 
-## Introduction
+## 🚀 Key Features
 
-Fork and clone this lesson for a template for your full-stack application. Take
-a look at the directory structure before we begin (NOTE: node_modules will be
-generated in a subsequent step):
+### ✅ **Core Diabetes Management**
+- Blood sugar tracking with color-coded results
+- Medication reminders with overdue detection
+- BMI calculator with health insights
+- Doctor-patient relationship management
 
-```console
-$ tree -L 2
-$ # the -L argument limits the depth at which we look into the directory structure
-.
-├── CONTRIBUTING.md
-├── LICENSE.md
-├── Pipfile
-├── README.md
-├── client
-│   ├── README.md
-│   ├── package.json
-│   ├── public
-│   └── src
-└── server
-    ├── app.py
-    ├── config.py
-    ├── models.py
-    └── seed.py
+### ✅ **Kenyan Localization**
+- **Bilingual Support**: Full English/Swahili interface
+- **Local Food Database**: 8 traditional foods (ugali, sukuma wiki, chapati, etc.)
+- **Cultural Context**: NHIF integration, traditional herbs awareness
+- **Local Statistics**: Kenya-specific diabetes education
+
+### ✅ **Smart Features**
+- **AI-Powered Alerts**: Glucose pattern analysis and predictions
+- **Food Impact Predictor**: Personalized recommendations for Kenyan foods
+- **Gamification**: Daily challenges, badges, progress tracking
+- **Interactive Education**: Diabetes lessons with quizzes
+
+## 🏗️ Technical Architecture
+
+### Backend (Flask API)
+```
+server/
+├── app.py                 # Main Flask application with 15+ API endpoints
+├── config.py             # Database and app configuration
+├── models.py             # 5 SQLAlchemy models with relationships
+├── seed.py               # Sample data including Kenyan doctors and foods
+├── kenyan_foods.py       # Local food database with glucose impact data
+├── glucose_predictor.py  # AI pattern analysis and predictive alerts
+├── gamification.py       # Badge system and daily challenges
+└── migrations/           # Database migration files
 ```
 
-A `migrations` folder will be added to the `server` directory in a later step.
-
-The `client` folder contains a basic React application, while the `server`
-folder contains a basic Flask application. You will adapt both folders to
-implement the code for your project .
-
-NOTE: If you did not previously install `tree` in your environment setup, MacOS
-users can install this with the command `brew install tree`. WSL and Linux users
-can run `sudo apt-get install tree` to download it as well.
-
-## Where Do I Start?
-
-Just as with your Phase 3 Project, this will likely be one of the biggest
-projects you've undertaken so far. Your first task should be creating a Git
-repository to keep track of your work and roll back any undesired changes.
-
-### Removing Existing Git Configuration
-
-If you're using this template, start off by removing the existing metadata for
-Github and Canvas. Run the following command to carry this out:
-
-```console
-$ rm -rf .git .canvas
+### Frontend (React SPA)
+```
+client/src/
+├── components/
+│   ├── App.js            # Main app with routing (9 routes)
+│   ├── AuthContext.js    # Authentication state management
+│   ├── Dashboard.js      # Welcome page with BMI and doctor info
+│   ├── Readings.js       # Blood sugar tracking with color coding
+│   ├── Medications.js    # Smart medication reminders
+│   ├── FoodInsights.js   # Kenyan food database with recommendations
+│   ├── SmartAlerts.js    # AI-powered glucose pattern alerts
+│   ├── Gamification.js   # Progress tracking, badges, challenges
+│   ├── Education.js      # Interactive diabetes education modules
+│   └── Profile.js        # User profile with doctor assignment
+├── contexts/
+│   └── LanguageContext.js # Bilingual support (English/Swahili)
+└── utils/
+    └── translations.js    # Translation strings for localization
 ```
 
-The `rm` command removes files from your computer's memory. The `-r` flag tells
-the console to remove _recursively_, which allows the command to remove
-directories and the files within them. `-f` removes them permanently.
+### Database Schema
+```
+Models & Relationships:
+├── User (1:many → Reading, Medication) + (many:1 → Doctor)
+├── Doctor (1:many → User)
+├── Reading (many:many → Meal via reading_meals association)
+├── Medication (many:1 → User)
+└── Meal (many:many → Reading via reading_meals)
+```
 
-`.git` contains this directory's configuration to track changes and push to
-Github (you want to track and push _your own_ changes instead), and `.canvas`
-contains the metadata to create a Canvas page from your Git repo. You don't have
-the permissions to edit our Canvas course, so it's not worth keeping around.
+## 🚀 Quick Start
 
-### Creating Your Own Git Repo
+### Prerequisites
+- Python 3.8+
+- Node.js 14+
+- Git
 
-First things first- rename this directory! Once you have an idea for a name,
-move one level up with `cd ..` and run
-`mv python-p4-project-template <new-directory-name>` to change its name (replace
-<new-directory-name> with an appropriate project directory name).
+### 1. Clone and Setup Repository
+```bash
+git clone <your-repo-url>
+cd Diabetes-Management-App
+```
 
-> **Note: If you typed the `mv` command in a terminal within VS Code, you should
-> close VS Code then reopen it.**
+### 2. Backend Setup
 
-> **Note: `mv` actually stands for "move", but your computer interprets this
-> rename as a move from a directory with the old name to a directory with a new
-> name.**
-
-`cd` back into your new directory and run `git init` to create a local git
-repository. Add all of your local files to version control with `git add --all`,
-then commit them with `git commit -m'initial commit'`. (You can change the
-message here- this one is just a common choice.)
-
-Navigate to [GitHub](https://github.com). In the upper-right corner of the page,
-click on the "+" dropdown menu, then select "New repository". Enter the name of
-your local repo, choose whether you would like it to be public or private, make
-sure "Initialize this repository with a README" is unchecked (you already have
-one), then click "Create repository".
-
-Head back to the command line and enter
-`git remote add origin git@github.com:github-username/new-repository-name.git`.
-NOTE: Replace `github-username` with your github username, and
-`new-repository-name` with the name of your new repository. This command will
-map the remote repository to your local repository. Finally, push your first
-commit with `git push -u origin main`.
-
-Your project is now version-controlled locally and online. This will allow you
-to create different versions of your project and pick up your work on a
-different machine if the need arises.
-
----
-
-## Setup
-
-### `server/`
-
-The `server/` directory contains all of your backend code.
-
-`app.py` is your Flask application. You'll want to use Flask to build a simple
-API backend like we have in previous modules. You should use Flask-RESTful for
-your routes. You should be familiar with `models.py` and `seed.py` by now, but
-remember that you will need to use Flask-SQLAlchemy, Flask-Migrate, and
-SQLAlchemy-Serializer instead of SQLAlchemy and Alembic in your models.
-
-The project contains a default `Pipfile` with some basic dependencies. You may
-adapt the `Pipfile` if there are additional dependencies you want to add for
-your project.
-
-To download the dependencies for the backend server, run:
-
-```console
+```bash
+cd server
 pipenv install
 pipenv shell
 ```
 
-You can run your Flask API on [`localhost:5555`](http://localhost:5555) by
-running:
+### 3. Database Setup
+```bash
+# Initialize database and migrations
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
 
-```console
-python server/app.py
+# Seed with sample data (including Kenyan doctors and foods)
+python seed.py
 ```
 
-Check that your server serves the default route `http://localhost:5555`. You
-should see a web page with the heading "Project Server".
+### 4. Start Backend Server
+```bash
+python app.py
+```
+The API will be available at `http://localhost:5555`
 
-### `client/`
+### 5. Frontend Setup
 
-The `client/` directory contains all of your frontend code. The file
-`package.json` has been configured with common React application dependencies,
-include `react-router-dom`. The file also sets the `proxy` field to forward
-requests to `"http://localhost:5555". Feel free to change this to another port-
-just remember to configure your Flask app to use another port as well!
-
-To download the dependencies for the frontend client, run:
-
-```console
-npm install --prefix client
+```bash
+cd ../client
+npm install
 ```
 
-You can run your React app on [`localhost:3000`](http://localhost:3000) by
-running:
-
-```sh
-npm start --prefix client
+### 6. Start Frontend Development Server
+```bash
+npm start
 ```
+The React app will be available at `http://localhost:3000`
 
-Check that your the React client displays a default page
-`http://localhost:3000`. You should see a web page with the heading "Project
-Client".
+## 🧪 Testing the Application
+
+### Sample Login Credentials
+After running the seed script, you can login with:
+- **Email**: `user1@example.com`
+- **Password**: `password123`
+
+### Key User Flows to Test
+1. **Language Toggle**: Click 🇰🇪 SW / 🇺🇸 EN button in navbar
+2. **Blood Sugar Tracking**: Add readings and see color-coded results
+3. **Food Insights**: Explore Kenyan foods and their glucose impact
+4. **Smart Alerts**: Add multiple readings to trigger pattern analysis
+5. **Gamification**: Complete daily challenges and earn badges
+6. **Doctor Assignment**: Assign a doctor in Profile page
 
 ## Generating Your Database
 

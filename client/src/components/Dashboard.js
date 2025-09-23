@@ -5,6 +5,7 @@ export default function Dashboard() {
   const { user, education, advice, token } = useAuth();
   const [bmi, setBmi] = useState(null);
   const [bmiError, setBmiError] = useState(null);
+  const [doctor, setDoctor] = useState(null);
 
   useEffect(() => {
     async function loadBMI() {
@@ -21,7 +22,23 @@ export default function Dashboard() {
         setBmiError(e.message);
       }
     }
+
+    async function loadDoctor() {
+      if (!user?.doctor_id) return;
+      try {
+        const res = await fetch('/doctors');
+        if (res.ok) {
+          const data = await res.json();
+          const assignedDoctor = data.find(d => d.id === user.doctor_id);
+          setDoctor(assignedDoctor);
+        }
+      } catch (e) {
+        console.error('Failed to load doctor:', e);
+      }
+    }
+
     loadBMI();
+    loadDoctor();
   }, [user, token]);
 
   if (!user) return <div>Loading...</div>;
@@ -42,6 +59,8 @@ export default function Dashboard() {
         <div className="grid-2">
           <div><strong>Email:</strong> {user.email}</div>
           <div><strong>Diabetes Type:</strong> {user.diabetes_type || 'Not set'}</div>
+          <div><strong>Doctor:</strong> {doctor ? `${doctor.name} (${doctor.email})` : 'Not assigned'}</div>
+          <div><strong>Status:</strong> <span style={{ color: 'var(--cyan)' }}>Active Patient</span></div>
         </div>
       </section>
 

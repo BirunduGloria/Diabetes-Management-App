@@ -12,6 +12,9 @@ from datetime import datetime
 from config import app, db, api
 from models import User, Reading, Medication, Meal, Doctor, reading_meals
 from schemas import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
+from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
+from glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
+from gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
 
 # ---------------- Basic route ----------------
 
@@ -587,6 +590,204 @@ class DoctorPatients(Resource):
 
 api.add_resource(Doctors, '/doctors')
 api.add_resource(DoctorPatients, '/doctors/<int:doctor_id>/patients')
+
+# ---------------- Kenyan Food Database ----------------
+class KenyanFoods(Resource):
+    def get(self):
+        """Get all Kenyan foods with nutritional data"""
+        return {'foods': KENYAN_FOODS}, 200
+
+class FoodRecommendations(Resource):
+    @jwt_required()
+    def get(self):
+        """Get personalized food recommendations for the user"""
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+        
+        language = request.args.get('lang', 'en')
+        diabetes_type = user.diabetes_type or 'type2'  # Default to type2
+        
+        recommendations = get_food_recommendations(diabetes_type, language)
+        friendly_foods = get_diabetes_friendly_foods()
+        foods_to_limit = get_foods_to_limit()
+        
+        return {
+            'recommendations': recommendations,
+            'diabetes_friendly': list(friendly_foods.keys()),
+            'foods_to_limit': list(foods_to_limit.keys()),
+            'diabetes_type': diabetes_type
+        }, 200
+
+api.add_resource(KenyanFoods, '/kenyan-foods')
+api.add_resource(FoodRecommendations, '/food-recommendations')
+
+# ---------------- Predictive Glucose Alerts ----------------
+class GlucoseAlerts(Resource):
+    @jwt_required()
+    def get(self):
+        """Get predictive alerts based on user's glucose patterns"""
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+        
+        language = request.args.get('lang', 'en')
+        
+        # Get recent readings (last 30 days)
+        from datetime import date, timedelta
+        cutoff_date = date.today() - timedelta(days=30)
+        recent_readings = Reading.query.filter(
+            Reading.user_id == user_id,
+            Reading.date >= cutoff_date
+        ).order_by(Reading.date.desc(), Reading.time.desc()).all()
+        
+        if len(recent_readings) < 3:
+            return {
+                'alerts': [],
+                'message': 'Need more readings to generate predictions' if language == 'en' else 'Inahitaji vipimo zaidi ili kutoa utabiri'
+            }, 200
+        
+        # Analyze patterns and generate alerts
+        patterns = analyze_user_patterns(recent_readings)
+        alerts = generate_predictive_alerts(user, patterns, language)
+        
+        return {
+            'alerts': alerts,
+            'patterns_summary': {
+                'total_readings': len(recent_readings),
+                'high_readings': patterns.get('high_readings_count', 0),
+                'low_readings': patterns.get('low_readings_count', 0),
+                'recent_trend': patterns.get('recent_trend', 'stable'),
+                'avg_pre_meal': patterns.get('avg_pre_meal'),
+                'avg_post_meal': patterns.get('avg_post_meal')
+            }
+        }, 200
+
+class MealPrediction(Resource):
+    @jwt_required()
+    def post(self):
+        """Get meal-specific predictions"""
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        if not data or 'context' not in data:
+            return {'error': 'context (pre_meal/post_meal) is required'}, 400
+        
+        language = data.get('language', 'en')
+        meal_context = data['context']
+        
+        # Get recent readings for pattern analysis
+        from datetime import date, timedelta
+        cutoff_date = date.today() - timedelta(days=14)
+        recent_readings = Reading.query.filter(
+            Reading.user_id == user_id,
+            Reading.date >= cutoff_date
+        ).order_by(Reading.date.desc()).all()
+        
+        predictions = get_meal_specific_predictions(recent_readings, meal_context, language)
+        
+        return {'predictions': predictions}, 200
+
+class FoodImpactPredictor(Resource):
+    @jwt_required()
+    def post(self):
+        """Predict how a specific food will impact user's glucose"""
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        if not data or 'food_name' not in data:
+            return {'error': 'food_name is required'}, 400
+        
+        language = data.get('language', 'en')
+        food_name = data['food_name']
+        
+        # Get user's patterns
+        from datetime import date, timedelta
+        cutoff_date = date.today() - timedelta(days=30)
+        recent_readings = Reading.query.filter(
+            Reading.user_id == user_id,
+            Reading.date >= cutoff_date
+        ).order_by(Reading.date.desc()).all()
+        
+        patterns = analyze_user_patterns(recent_readings) if recent_readings else None
+        prediction = get_food_impact_prediction(food_name, patterns, language)
+        
+        if not prediction:
+            return {'error': 'Food not found in database'}, 404
+        
+        return {'prediction': prediction}, 200
+
+api.add_resource(GlucoseAlerts, '/glucose-alerts')
+api.add_resource(MealPrediction, '/meal-prediction')
+api.add_resource(FoodImpactPredictor, '/food-impact')
+
+# ---------------- Gamification System ----------------
+class UserProgress(Resource):
+    @jwt_required()
+    def get(self):
+        """Get user's gamification progress"""
+        user_id = get_jwt_identity()
+        language = request.args.get('lang', 'en')
+        
+        # Get user data
+        readings = Reading.query.filter_by(user_id=user_id).all()
+        medications = Medication.query.filter_by(user_id=user_id).all()
+        
+        # Calculate progress
+        progress = get_user_progress(readings, medications)
+        earned_badges = check_badges(readings)
+        daily_status = get_daily_challenges_status(readings)
+        
+        # Format badges with localized text
+        user_badges = []
+        for badge_id in earned_badges:
+            if badge_id in BADGES:
+                badge = BADGES[badge_id].copy()
+                badge['id'] = badge_id
+                badge['name'] = badge['name'][language]
+                badge['description'] = badge['description'][language]
+                user_badges.append(badge)
+        
+        # Format daily challenges
+        daily_challenges = []
+        for challenge_id, challenge_data in DAILY_CHALLENGES.items():
+            challenge = challenge_data.copy()
+            challenge['id'] = challenge_id
+            challenge['name'] = challenge['name'][language]
+            challenge['description'] = challenge['description'][language]
+            challenge['status'] = daily_status.get(challenge_id, {'completed': False, 'progress': 0})
+            daily_challenges.append(challenge)
+        
+        # Format level info
+        level_info = progress['level']
+        level_info['title'] = level_info['title'][language]
+        
+        return {
+            'progress': {
+                'current_streak': progress['current_streak'],
+                'total_readings': progress['total_readings'],
+                'weekly_readings': progress['weekly_readings'],
+                'level': level_info,
+                'total_points': progress['total_readings'] * 10 + progress['current_streak'] * 5
+            },
+            'badges': user_badges,
+            'daily_challenges': daily_challenges,
+            'available_badges': [
+                {
+                    'id': badge_id,
+                    'name': badge_data['name'][language],
+                    'description': badge_data['description'][language],
+                    'icon': badge_data['icon'],
+                    'points': badge_data['points'],
+                    'earned': badge_id in earned_badges
+                }
+                for badge_id, badge_data in BADGES.items()
+            ]
+        }, 200
+
+api.add_resource(UserProgress, '/user-progress')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555, debug=True)
