@@ -53,7 +53,7 @@ export default function Medications() {
   }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   async function create(values, { setSubmitting, resetForm, setStatus }) {
     setStatus(null);
@@ -100,7 +100,7 @@ export default function Medications() {
 
       <div className="card section" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <div style={{ fontWeight: 600 }}>Quick actions</div>
-        <button className="btn btn-outline" onClick={markAllOverdue}>Mark all overdue as missed</button>
+  <button className="btn btn-outline" onClick={() => markAllOverdue()}>Mark all overdue as missed</button>
       </div>
         <div className="accent-line" />
       </div>
