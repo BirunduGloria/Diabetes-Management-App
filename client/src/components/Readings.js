@@ -5,8 +5,8 @@ import * as Yup from 'yup';
 
 const ReadingSchema = Yup.object({
   value: Yup.number().min(40).max(500).required('Required'),
-  date: Yup.string().required('Required'), // simple check; browser date input helps
-  time: Yup.string().required('Required'), // browser time input helps
+  date: Yup.string().required('Required'), 
+  time: Yup.string().required('Required'),
   context: Yup.string().oneOf(['', 'pre_meal', 'post_meal']),
   notes: Yup.string(),
 });
@@ -22,7 +22,7 @@ function evaluateGlucose(value, context) {
   return { status: 'high', color: 'crimson' };
 }
 
-// Simple suggestions aligned with backend logic
+
 const TIPS_NORMAL = [
   'Maintain balanced meals with non-starchy veggies, lean protein, and healthy fats.',
   'Stay hydrated and keep up light daily activity.',
