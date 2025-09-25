@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useHistory, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useLanguage } from './LanguageContext';
@@ -7,10 +7,6 @@ export default function Landing() {
   const history = useHistory();
   const { isAuthed } = useAuth();
   const { language } = useLanguage();
-
-  useEffect(() => {
-    if (isAuthed) history.replace('/dashboard');
-  }, [isAuthed, history]);
 
   const t = {
     title_en: 'Manage Your Diabetes,\nEmbrace Your Life',
@@ -57,8 +53,17 @@ export default function Landing() {
           </h1>
           <p className="hero-sub">{isSw ? t.subtitle_sw : t.subtitle_en}</p>
           <div className="hero-cta">
-            <Link to="/signup" className="btn">{isSw ? t.getStarted_sw : t.getStarted_en}</Link>
-            <Link to="/login" className="btn btn-outline">{isSw ? 'Ingia' : 'Login'}</Link>
+            {isAuthed ? (
+              <>
+                <Link to="/dashboard" className="btn">{isSw ? 'Nenda kwenye Dashibodi' : 'Go to Dashboard'}</Link>
+                <Link to="/profile" className="btn btn-outline">{isSw ? 'Wasifu' : 'Profile'}</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/signup" className="btn">{isSw ? t.getStarted_sw : t.getStarted_en}</Link>
+                <Link to="/login" className="btn btn-outline">{isSw ? 'Ingia' : 'Login'}</Link>
+              </>
+            )}
           </div>
         </div>
       </section>
