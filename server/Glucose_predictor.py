@@ -227,8 +227,7 @@ def get_food_impact_prediction(food_name, user_patterns, language='en'):
         'estimated_spike': 0,
         'recommendations': food_data['diabetes_tips'][language]
     }
-    
-    
+
     if glucose_impact == 'very_high':
         prediction['estimated_spike'] = 80 + (user_avg - 150) * 0.3
     elif glucose_impact == 'high':
