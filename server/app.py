@@ -49,7 +49,7 @@ class Signup(Resource):
             db.session.commit()
             
             # Create access token
-            access_token = create_access_token(identity=user.id)
+            access_token = create_access_token(identity=str(user.id))
             
             return {
                 'user': user.to_dict(),
@@ -72,7 +72,7 @@ class Login(Resource):
         user = User.query.filter_by(email=data['email']).first()
         
         if user and user.authenticate(data['password']):
-            access_token = create_access_token(identity=user.id)
+            access_token = create_access_token(identity=str(user.id))
             return {
                 'user': user.to_dict(),
                 'access_token': access_token,
@@ -85,7 +85,7 @@ class Login(Resource):
 class CheckSession(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if user:
@@ -258,13 +258,13 @@ doctors_schema = DoctorSchema(many=True)
 class Readings(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         items = Reading.query.filter_by(user_id=user_id).order_by(Reading.date, Reading.time).all()
         return readings_schema.dump(items), 200
 
     @jwt_required()
     def post(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         required = ['value', 'date', 'time']
         if not all(k in data for k in required):
@@ -296,7 +296,7 @@ class Readings(Resource):
 class ReadingById(Resource):
     @jwt_required()
     def get(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -307,7 +307,7 @@ class ReadingById(Resource):
 
     @jwt_required()
     def patch(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -338,7 +338,7 @@ class ReadingById(Resource):
 
     @jwt_required()
     def delete(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -354,7 +354,7 @@ class ReadingById(Resource):
 class UserProfile(Resource):
     @jwt_required()
     def patch(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -389,7 +389,7 @@ class UserProfile(Resource):
 class UserBMI(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -420,13 +420,13 @@ api.add_resource(UserBMI, '/me/bmi')
 class Medications(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         meds = Medication.query.filter_by(user_id=user_id).order_by(Medication.time).all()
         return medications_schema.dump(meds), 200
 
     @jwt_required()
     def post(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         required = ['name', 'dose', 'time']
         if not all(k in data and data[k] for k in required):
@@ -449,7 +449,7 @@ class Medications(Resource):
 class MedicationById(Resource):
     @jwt_required()
     def patch(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         med = Medication.query.filter_by(id=id, user_id=user_id).first()
         if not med:
             return {'error': 'Medication not found'}, 404
@@ -479,7 +479,7 @@ api.add_resource(MedicationById, '/medications/<int:id>')
 class Meals(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         # Return only meals that are linked to this user's readings OR simple listing of all meals
         # For simplicity, we'll return all meals the user created in this app context.
         # If meals are global, you could return all.
@@ -511,7 +511,7 @@ class ReadingMeals(Resource):
     @jwt_required()
     def post(self, reading_id):
         """Attach a meal to a reading with optional carbs_amount."""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=reading_id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -538,7 +538,7 @@ class ReadingMeals(Resource):
     @jwt_required()
     def delete(self, reading_id):
         """Detach a meal from a reading."""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=reading_id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -600,7 +600,7 @@ class FoodRecommendations(Resource):
     @jwt_required()
     def get(self):
         """Get personalized food recommendations for the user"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -627,7 +627,7 @@ class GlucoseAlerts(Resource):
     @jwt_required()
     def get(self):
         """Get predictive alerts based on user's glucose patterns"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -668,7 +668,7 @@ class MealPrediction(Resource):
     @jwt_required()
     def post(self):
         """Get meal-specific predictions"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         
         if not data or 'context' not in data:
@@ -693,7 +693,7 @@ class FoodImpactPredictor(Resource):
     @jwt_required()
     def post(self):
         """Predict how a specific food will impact user's glucose"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         
         if not data or 'food_name' not in data:
@@ -727,7 +727,7 @@ class UserProgress(Resource):
     @jwt_required()
     def get(self):
         """Get user's gamification progress"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         language = request.args.get('lang', 'en')
         
         # Get user data
