@@ -1,18 +1,18 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import { AuthProvider, useAuth } from "./AuthContext";
-import { LanguageProvider } from "../contexts/LanguageContext";
+import { LanguageProvider } from "./LanguageContext";
 import NavBar from "./NavBar";
-import Login from "./Login";
+import Login from "./login";
 import Signup from "./Signup";
 import Dashboard from "./Dashboard";
-import Profile from "./Profile";
+import Profile from "./profile";
 import Readings from "./Readings";
 import Medications from "./Medications";
 import FoodInsights from "./FoodInsights";
-import SmartAlerts from "./SmartAlerts";
+import SmartAlerts from "./Smartalert";
 import Gamification from "./Gamification";
-import Education from "./Education";
+import Education from "./education";
 
 function PrivateRoute({ children, ...rest }) {
   const { isAuthed } = useAuth();

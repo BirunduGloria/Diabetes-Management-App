@@ -15,7 +15,7 @@ export default function Medications() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
 
-  async function load() {
+  const load = React.useCallback(async () => {
     setError(null);
     try {
       const res = await fetch('/medications', {
@@ -27,9 +27,9 @@ export default function Medications() {
     } catch (e) {
       setError(e.message);
     }
+  }, [token]);
 
-  async function markAllOverdue() {
-    // Find pending medications whose time is in the past relative to now
+  const markAllOverdue = React.useCallback(async () => {
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const overdue = items.filter(m => {
@@ -50,8 +50,7 @@ export default function Medications() {
     for (const m of overdue) {
       await updateStatus(m.id, 'missed');
     }
-  }
-  }
+  }, [items]);
 
   useEffect(() => { load(); }, [load]);
 
