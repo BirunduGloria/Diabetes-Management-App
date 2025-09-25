@@ -247,3 +247,37 @@ input:focus, select:focus, textarea:focus {
   .footer-links { display: flex; gap: 14px; flex-wrap: wrap; }
   .footer-links a { color: var(--muted); text-decoration: none; }
   .footer-links a:hover { color: var(--black); background: var(--cyan); padding: 4px 8px; border-radius: 8px; }
+
+  /* ---------------- Food Insights UI ---------------- */
+  /* Section headers */
+  .section-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 10px; }
+  .section-header h3 { margin: 0; font-size: 1.1rem; letter-spacing: 0.2px; }
+  .section-subtle { color: var(--muted); font-size: 0.95rem; margin: 0; }
+
+  /* Pill tabs (for quick categories) */
+  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: #0f1212; color: var(--text); cursor: pointer; transition: background 200ms ease, border-color 200ms ease, transform 120ms ease; }
+  .pill:hover { background: rgba(255,255,255,0.04); border-color: var(--border); transform: translateY(-1px); }
+
+  /* Food grid/cards */
+  .food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .food-card { border: 1px solid var(--border); border-radius: 14px; background: #0f1212; padding: 12px; transition: transform 140ms ease, box-shadow 220ms ease, border-color 200ms ease; position: relative; overflow: hidden; }
+  .food-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); border-color: rgba(47,243,224,0.35); }
+  .food-card-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .food-card-meta { font-size: 0.92rem; color: var(--muted); margin-top: 6px; }
+
+  /* Impact chips */
+  .impact-chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; line-height: 1; border: 1px solid transparent; }
+  .impact-none, .impact-low { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+  .impact-medium { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+  .impact-high { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+  .impact-very_high { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+
+  /* Modal styles */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+  .modal { max-width: 520px; max-height: 80vh; overflow: auto; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .modal-close { background: transparent; border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px; display: grid; place-items: center; transition: background 200ms ease, border-color 200ms ease, transform 120ms ease; }
+  .modal-close:hover { background: rgba(47,243,224,0.08); border-color: var(--cyan); transform: translateY(-1px); }
+  .kv-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  @media (max-width: 720px) { .kv-grid { grid-template-columns: 1fr; } }
