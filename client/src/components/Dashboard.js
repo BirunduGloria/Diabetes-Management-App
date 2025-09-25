@@ -86,7 +86,7 @@ export default function Dashboard() {
             ))}
           </ul>
         ) : (
-          <p>No specific tips yet. Update your diabetes type in your profile to get tailored insights.</p>
+          <p> Update your diabetes type in your profile to get tailored insights.</p>
         )}
       </section>
 
