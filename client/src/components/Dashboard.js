@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { useLanguage } from './LanguageContext';
 
 export default function Dashboard() {
   const { user, education, advice, token } = useAuth();
   const [bmi, setBmi] = useState(null);
   const [bmiError, setBmiError] = useState(null);
   const [doctor, setDoctor] = useState(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function loadBMI() {
@@ -47,38 +49,38 @@ export default function Dashboard() {
     <div>
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
         <div className="crumb">
-          <span>Home</span>
+          <span>{t('home')}</span>
           <span className="sep">›</span>
-          <b>Dashboard</b>
+          <b>{t('dashboard')}</b>
         </div>
         <div className="accent-line" />
       </div>
 
       <section className="card section">
-        <h3 style={{ marginTop: 0 }}>Welcome, {user.name}</h3>
+        <h3 style={{ marginTop: 0 }}>{t('welcome')}, {user.name}</h3>
         <div className="grid-2">
-          <div><strong>Email:</strong> {user.email}</div>
-          <div><strong>Diabetes Type:</strong> {user.diabetes_type || 'Not set'}</div>
-          <div><strong>Doctor:</strong> {doctor ? `${doctor.name} (${doctor.email})` : 'Not assigned'}</div>
-          <div><strong>Status:</strong> <span style={{ color: 'var(--cyan)' }}>Active Patient</span></div>
+          <div><strong>{t('emailLabel')}:</strong> {user.email}</div>
+          <div><strong>{t('diabetesTypeLabel')}:</strong> {user.diabetes_type || t('notSet')}</div>
+          <div><strong>{t('doctorLabel')}:</strong> {doctor ? `${doctor.name} (${doctor.email})` : t('notAssigned')}</div>
+          <div><strong>{t('statusLabel')}:</strong> <span style={{ color: 'var(--cyan)' }}>{t('activePatient')}</span></div>
         </div>
       </section>
 
       <section className="card section">
-        <h3 style={{ marginTop: 0 }}>BMI</h3>
+        <h3 style={{ marginTop: 0 }}>{t('bmi')}</h3>
         {!user.height_cm || !user.weight_kg ? (
-          <p>Set your height and weight in the Profile page to see your BMI.</p>
+          <p>{t('setProfileForBMI')}</p>
         ) : bmi ? (
           <p><strong>{bmi.bmi}</strong> — {bmi.category}</p>
         ) : bmiError ? (
           <p style={{ color: 'crimson' }}>{bmiError}</p>
         ) : (
-          <p>Loading BMI...</p>
+          <p>{t('loadingBMI')}</p>
         )}
       </section>
 
       <section className="card">
-        <h3 style={{ marginTop: 0 }}>Educational Insights</h3>
+        <h3 style={{ marginTop: 0 }}>{t('educationalInsights')}</h3>
         {education && education.length > 0 ? (
           <ul>
             {education.map((tip, i) => (
@@ -91,15 +93,15 @@ export default function Dashboard() {
       </section>
 
       <section className="card section">
-        <h3 style={{ marginTop: 0 }}>Personalized Advice</h3>
+        <h3 style={{ marginTop: 0 }}>{t('personalizedAdvice')}</h3>
         {advice?.bmi_category && (
           <p style={{ marginTop: 0 }}>
-            <strong>BMI Category:</strong> {advice.bmi_category}
+            <strong>{t('bmiCategory')}:</strong> {advice.bmi_category}
           </p>
         )}
         <div className="grid-2">
           <div>
-            <h4>Nutrition</h4>
+            <h4>{t('nutrition')}</h4>
             <ul>
               {(advice?.nutrition || []).map((t, i) => (
                 <li key={i}>{t}</li>
@@ -107,7 +109,7 @@ export default function Dashboard() {
             </ul>
           </div>
           <div>
-            <h4>Exercise</h4>
+            <h4>{t('exercise')}</h4>
             <ul>
               {(advice?.exercise || []).map((t, i) => (
                 <li key={i}>{t}</li>
@@ -116,7 +118,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="section">
-          <h4>Medication</h4>
+          <h4>{t('medication')}</h4>
           <ul>
             {(advice?.medication || []).map((t, i) => (
               <li key={i}>{t}</li>

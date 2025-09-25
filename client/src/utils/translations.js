@@ -10,6 +10,10 @@ export const translations = {
     medications: 'Medications',
     profile: 'Profile',
     logout: 'Logout',
+    foodInsights: 'Food Insights',
+    smartAlerts: 'Smart Alerts',
+    progress: 'Progress',
+    education: 'Education',
     
     // Dashboard
     welcome: 'Welcome',
@@ -20,6 +24,15 @@ export const translations = {
     exercise: 'Exercise',
     medication: 'Medication',
     bmiCategory: 'BMI Category',
+    emailLabel: 'Email',
+    diabetesTypeLabel: 'Diabetes Type',
+    doctorLabel: 'Doctor',
+    statusLabel: 'Status',
+    activePatient: 'Active Patient',
+    notSet: 'Not set',
+    notAssigned: 'Not assigned',
+    setProfileForBMI: 'Set your height and weight in the Profile page to see your BMI.',
+    loadingBMI: 'Loading BMI...',
     
     // Readings
     addReading: 'Add Blood Sugar Reading',
@@ -89,6 +102,10 @@ export const translations = {
     medications: 'Dawa',
     profile: 'Wasifu',
     logout: 'Toka',
+    foodInsights: 'Maarifa ya Chakula',
+    smartAlerts: 'Arifa Mahiri',
+    progress: 'Maendeleo',
+    education: 'Elimu',
     
     // Dashboard
     welcome: 'Karibu',
@@ -99,6 +116,15 @@ export const translations = {
     exercise: 'Mazoezi',
     medication: 'Dawa',
     bmiCategory: 'Kiwango cha BMI',
+    emailLabel: 'Barua pepe',
+    diabetesTypeLabel: 'Aina ya Kisukari',
+    doctorLabel: 'Daktari',
+    statusLabel: 'Hali',
+    activePatient: 'Mgonjwa Anayeendelea',
+    notSet: 'Haijawekwa',
+    notAssigned: 'Hajapangiwa',
+    setProfileForBMI: 'Weka urefu na uzito katika ukurasa wa Wasifu ili kuona BMI yako.',
+    loadingBMI: 'Inapakia BMI...',
     
     // Readings
     addReading: 'Ongeza Kipimo cha Sukari ya Damu',

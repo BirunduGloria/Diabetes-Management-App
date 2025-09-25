@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useLanguage } from './LanguageContext';
 
 const MedSchema = Yup.object({
   name: Yup.string().required('Required'),
@@ -14,6 +15,7 @@ export default function Medications() {
   const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
+  const { t } = useLanguage();
 
   const load = React.useCallback(async () => {
     setError(null);
@@ -92,20 +94,20 @@ export default function Medications() {
     <div>
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
         <div className="crumb">
-          <span>Home</span>
+          <span>{t('home')}</span>
           <span className="sep">›</span>
-          <b>Medications</b>
+          <b>{t('medications')}</b>
         </div>
 
       <div className="card section" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <div style={{ fontWeight: 600 }}>Quick actions</div>
-  <button className="btn btn-outline" onClick={() => markAllOverdue()}>Mark all overdue as missed</button>
+        <div style={{ fontWeight: 600 }}>{t('quickActions')}</div>
+  <button className="btn btn-outline" onClick={() => markAllOverdue()}>{t('markAllOverdue')}</button>
       </div>
         <div className="accent-line" />
       </div>
 
       <div className="card section">
-        <h2 style={{ marginTop: 0 }}>Add Medication</h2>
+        <h2 style={{ marginTop: 0 }}>{t('addMedication')}</h2>
       <Formik
         initialValues={{ name: '', dose: '', time: '', status: 'pending' }}
         validationSchema={MedSchema}
@@ -113,27 +115,27 @@ export default function Medications() {
       >
         {({ isSubmitting, status }) => (
           <Form className="space-y">
-            <label>Name</label>
+            <label>{t('name')}</label>
             <Field name="name" />
             <div className="error"><ErrorMessage name="name" /></div>
 
-            <label>Dose</label>
+            <label>{t('dose')}</label>
             <Field name="dose" />
             <div className="error"><ErrorMessage name="dose" /></div>
 
-            <label>Time</label>
+            <label>{t('time')}</label>
             <Field name="time" type="time" />
             <div className="error"><ErrorMessage name="time" /></div>
 
-            <label>Status</label>
+            <label>{t('status')}</label>
             <Field as="select" name="status">
-              <option value="pending">Pending</option>
-              <option value="taken">Taken</option>
-              <option value="missed">Missed</option>
+              <option value="pending">{t('pending')}</option>
+              <option value="taken">{t('taken')}</option>
+              <option value="missed">{t('missed')}</option>
             </Field>
 
             {status && <div className="error">{status}</div>}
-            <button className="btn" type="submit" disabled={isSubmitting}>Add Medication</button>
+            <button className="btn" type="submit" disabled={isSubmitting}>{t('addMedication')}</button>
           </Form>
         )}
       </Formik>
@@ -172,9 +174,9 @@ export default function Medications() {
               </div>
               <div>Time: {timeStr}</div>
               <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-                <button className="btn btn-outline" onClick={() => updateStatus(m.id, 'taken')}>Mark Taken</button>
-                <button className="btn btn-outline" onClick={() => updateStatus(m.id, 'missed')}>Mark Missed</button>
-                <button className="btn btn-outline" onClick={() => updateStatus(m.id, 'pending')}>Reset</button>
+                <button className="btn btn-outline" onClick={() => updateStatus(m.id, 'taken')}>{t('markTaken')}</button>
+                <button className="btn btn-outline" onClick={() => updateStatus(m.id, 'missed')}>{t('markMissed')}</button>
+                <button className="btn btn-outline" onClick={() => updateStatus(m.id, 'pending')}>{t('reset')}</button>
               </div>
             </li>
           );

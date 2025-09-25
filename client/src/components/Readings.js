@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useLanguage } from './LanguageContext';
 
 const ReadingSchema = Yup.object({
   value: Yup.number().min(40).max(500).required('Required'),
@@ -46,6 +47,7 @@ export default function Readings() {
   const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
+  const { t } = useLanguage();
 
   async function fetchReadings() {
     try {
@@ -105,15 +107,15 @@ export default function Readings() {
     <div>
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
         <div className="crumb">
-          <span>Home</span>
+          <span>{t('home')}</span>
           <span className="sep">›</span>
-          <b>Readings</b>
+          <b>{t('readings')}</b>
         </div>
         <div className="accent-line" />
       </div>
 
       <div className="card section">
-        <h2 style={{ marginTop: 0 }}>Add Reading</h2>
+        <h2 style={{ marginTop: 0 }}>{t('addReading')}</h2>
         <Formik
           initialValues={{ value: '', date: '', time: '', context: '', notes: '' }}
           validationSchema={ReadingSchema}
@@ -121,31 +123,31 @@ export default function Readings() {
         >
           {({ isSubmitting, status }) => (
             <Form className="space-y">
-              <label>Value (mg/dL)</label>
+              <label>{t('value')}</label>
               <Field name="value" type="number" step="1" />
               <div className="error"><ErrorMessage name="value" /></div>
 
-              <label>Date</label>
+              <label>{t('date')}</label>
               <Field name="date" type="date" />
               <div className="error"><ErrorMessage name="date" /></div>
 
-              <label>Time</label>
+              <label>{t('time')}</label>
               <Field name="time" type="time" />
               <div className="error"><ErrorMessage name="time" /></div>
 
-              <label>Context (optional)</label>
+              <label>{t('context')} ({t('optional')})</label>
               <Field as="select" name="context">
-                <option value="">Select</option>
-                <option value="pre_meal">Pre-meal</option>
-                <option value="post_meal">Post-meal</option>
+                <option value="">{t('select')}</option>
+                <option value="pre_meal">{t('preMeal')}</option>
+                <option value="post_meal">{t('postMeal')}</option>
               </Field>
               <div className="error"><ErrorMessage name="context" /></div>
 
-              <label>Notes (optional)</label>
+              <label>{t('notes')} ({t('optional')})</label>
               <Field name="notes" as="textarea" rows={2} />
 
               {status && <div className="error">{status}</div>}
-              <button className="btn" type="submit" disabled={isSubmitting}>Add Reading</button>
+              <button className="btn" type="submit" disabled={isSubmitting}>{t('addReading')}</button>
             </Form>
           )}
         </Formik>

@@ -20,10 +20,10 @@ export default function NavBar() {
       {!isAuthed && <NavLink to="/signup" activeClassName="active">{t('signup')}</NavLink>}
       {isAuthed && <NavLink to="/dashboard" activeClassName="active">{t('dashboard')}</NavLink>}
       {isAuthed && <NavLink to="/readings" activeClassName="active">{t('readings')}</NavLink>}
-      {isAuthed && <NavLink to="/food-insights" activeClassName="active">Food Insights</NavLink>}
-      {isAuthed && <NavLink to="/smart-alerts" activeClassName="active">Smart Alerts</NavLink>}
-      {isAuthed && <NavLink to="/gamification" activeClassName="active">Progress</NavLink>}
-      {isAuthed && <NavLink to="/education" activeClassName="active">Education</NavLink>}
+      {isAuthed && <NavLink to="/food-insights" activeClassName="active">{t('foodInsights')}</NavLink>}
+      {isAuthed && <NavLink to="/smart-alerts" activeClassName="active">{t('smartAlerts')}</NavLink>}
+      {isAuthed && <NavLink to="/gamification" activeClassName="active">{t('progress')}</NavLink>}
+      {isAuthed && <NavLink to="/education" activeClassName="active">{t('education')}</NavLink>}
       {isAuthed && <NavLink to="/profile" activeClassName="active">{t('profile')}</NavLink>}
       <div className="spacer" />
       <button 

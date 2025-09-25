@@ -75,7 +75,7 @@ export default function FoodInsights() {
         <div className="crumb">
           <span>{t('home')}</span>
           <span className="sep">›</span>
-          <b>Food Insights</b>
+          <b>{t('foodInsights')}</b>
         </div>
         <div className="accent-line" />
       </div>
