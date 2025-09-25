@@ -40,6 +40,7 @@ body {
   align-items: center;
   padding: 12px 16px;
   background: rgba(10,10,10,0.7);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--border);
 }
@@ -193,4 +194,13 @@ input:focus, select:focus, textarea:focus {
   --link: #61dafb;
   --text: hsla(0, 0%, 100%, 0.88);
 }
+
+.fade-step { animation: fadeIn 260ms ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+
+.input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--text); }
+.input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,0.2); }
+
+/* Safari support for backdrop blur if used elsewhere */
+.backdrop-blur { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 

@@ -45,6 +45,8 @@ export default function Dashboard() {
 
   if (!user) return <div>Loading...</div>;
 
+  const hasAnyReading = Array.isArray(education) || true; // placeholder; rely on backend if needed
+
   return (
     <div>
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
@@ -55,6 +57,18 @@ export default function Dashboard() {
         </div>
         <div className="accent-line" />
       </div>
+
+      {/* Progressive prompts */}
+      {(!user.height_cm || !user.weight_kg) && (
+        <div className="card" style={{ borderLeft: '6px solid var(--cyan)', marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <strong>{t('bmi')}</strong>
+              <div>{t('setProfileForBMI')}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="card section">
         <h3 style={{ marginTop: 0 }}>{t('welcome')}, {user.name}</h3>

@@ -43,20 +43,58 @@ class Signup(Resource):
             user.password_hash = data['password']  # This will trigger the setter
             # Optional diabetes_type at signup
             if 'diabetes_type' in data:
-                user.diabetes_type = data['diabetes_type']
+                user.diabetes_type = data['diabetes_type'] or None
+            # Optional BMI fields at signup
+            if 'height_cm' in data and data['height_cm'] is not None and data['height_cm'] != '':
+                try:
+                    user.height_cm = float(data['height_cm'])
+                except Exception:
+                    return {'error': 'height_cm must be a number'}, 400
+            if 'weight_kg' in data and data['weight_kg'] is not None and data['weight_kg'] != '':
+                try:
+                    user.weight_kg = float(data['weight_kg'])
+                except Exception:
+                    return {'error': 'weight_kg must be a number'}, 400
             
             db.session.add(user)
             db.session.commit()
             
+            # Optionally create an initial glucose reading
+            initial_eval = None
+            if data.get('initial_reading_value') is not None and data.get('initial_reading_value') != '':
+                try:
+                    value = float(data['initial_reading_value'])
+                except Exception:
+                    return {'error': 'initial_reading_value must be a number'}, 400
+                context = data.get('initial_reading_context') or 'pre_meal'
+                if context not in ['pre_meal', 'post_meal']:
+                    return {'error': "initial_reading_context must be 'pre_meal' or 'post_meal'"}, 400
+                from datetime import date, datetime as dt
+                reading = Reading(
+                    value=value,
+                    date=date.today(),
+                    time=dt.now().time().replace(microsecond=0),
+                    notes=data.get('initial_reading_notes'),
+                    context=context,
+                    user_id=user.id,
+                )
+                db.session.add(reading)
+                db.session.commit()
+                initial_eval = evaluate_glucose(value, context)
+            
             # Create access token
             access_token = create_access_token(identity=str(user.id))
             
-            return {
+            # Response: include advice (uses any BMI provided) and optional initial reading evaluation
+            resp = {
                 'user': user.to_dict(),
                 'access_token': access_token,
                 'education': education_for(user.diabetes_type),
                 'advice': advice_for(user)
-            }, 201
+            }
+            if initial_eval:
+                resp['initial_evaluation'] = initial_eval
+            return resp, 201
             
         except Exception as e:
             db.session.rollback()

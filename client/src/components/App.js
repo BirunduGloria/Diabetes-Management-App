@@ -13,6 +13,8 @@ import FoodInsights from "./FoodInsights";
 import SmartAlerts from "./Smartalert";
 import Gamification from "./Gamification";
 import Education from "./education";
+import Onboarding from "./Onboarding";
+import Landing from "./Landing";
 
 function PrivateRoute({ children, ...rest }) {
   const { isAuthed } = useAuth();
@@ -44,6 +46,9 @@ function App() {
               <Route path="/signup">
                 <Signup />
               </Route>
+              <PrivateRoute path="/onboarding">
+                <Onboarding />
+              </PrivateRoute>
               <PrivateRoute path="/dashboard">
                 <Dashboard />
               </PrivateRoute>
@@ -68,8 +73,11 @@ function App() {
               <PrivateRoute path="/education">
                 <Education />
               </PrivateRoute>
-              <Route path="/">
-                <Redirect to="/login" />
+              <Route exact path="/">
+                <Landing />
+              </Route>
+              <Route path="*">
+                <Redirect to="/" />
               </Route>
             </Switch>
           </div>
