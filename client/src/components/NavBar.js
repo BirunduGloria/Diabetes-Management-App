@@ -20,7 +20,6 @@ export default function NavBar() {
       {!isAuthed && <NavLink to="/signup" activeClassName="active">{t('signup')}</NavLink>}
       {isAuthed && <NavLink to="/dashboard" activeClassName="active">{t('dashboard')}</NavLink>}
       {isAuthed && <NavLink to="/readings" activeClassName="active">{t('readings')}</NavLink>}
-      {isAuthed && <NavLink to="/medications" activeClassName="active">{t('medications')}</NavLink>}
       {isAuthed && <NavLink to="/food-insights" activeClassName="active">Food Insights</NavLink>}
       {isAuthed && <NavLink to="/smart-alerts" activeClassName="active">Smart Alerts</NavLink>}
       {isAuthed && <NavLink to="/gamification" activeClassName="active">Progress</NavLink>}
