@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -20,7 +21,6 @@ const ProfileSchema = Yup.object({
 export default function Profile() {
   const { token, user, setUser, setEducation, setAdvice } = useAuth();
   const [doctors, setDoctors] = useState([]);
-  if (!user) return null;
 
   useEffect(() => {
     async function loadDoctors() {
@@ -33,6 +33,9 @@ export default function Profile() {
     }
     loadDoctors();
   }, []);
+
+  // Render nothing until user info is available
+  if (!user) return null;
 
   async function handleSubmit(values, { setSubmitting, setStatus }) {
     setStatus(null);
@@ -116,6 +119,9 @@ export default function Profile() {
 
             {status && <div className={status === 'Saved!' ? 'success' : 'error'}>{status}</div>}
             <button className="btn" type="submit" disabled={isSubmitting}>Save</button>
+            <div style={{ marginTop: 12 }}>
+              <Link className="btn btn-outline" to="/dashboard">Go to Dashboard</Link>
+            </div>
           </Form>
         )}
       </Formik>
