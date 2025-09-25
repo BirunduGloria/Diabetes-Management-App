@@ -33,6 +33,37 @@ export default function Landing() {
 
   const isSw = language === 'sw';
 
+  // Professional inline SVG icons (stroke-based, crisp on all DPIs)
+  const Icons = {
+    insights: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M9 18h6"/>
+        <path d="M10 22h4"/>
+        <path d="M2 12a8 8 0 1 1 16 0c0 2.11-.82 3.44-2 4.5-.66.6-1 1.47-1 2.37v.13H9v-.13c0-.9-.34-1.77-1-2.37C2.82 15.44 2 14.11 2 12Z"/>
+      </svg>
+    ),
+    reminders: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M6 8a6 6 0 1 1 12 0v5l1.5 2.5H4.5L6 13V8Z"/>
+        <path d="M9.5 20a2.5 2.5 0 0 0 5 0"/>
+        <path d="M12 6v4m0 0h3"/>
+      </svg>
+    ),
+    community: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M16 11a4 4 0 1 0-8 0"/>
+        <path d="M2 20c1.5-3.5 5-5 10-5s8.5 1.5 10 5"/>
+        <circle cx="12" cy="9" r="3"/>
+      </svg>
+    ),
+    progress: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M3 3v18h18"/>
+        <path d="M7 15l4-4 3 3 5-6"/>
+      </svg>
+    ),
+  };
+
   return (
     <div className="landing">
       {/* Hero */}
@@ -76,10 +107,10 @@ export default function Landing() {
         </div>
 
         <div className="features-grid">
-          <FeatureCard icon="💡" title={isSw ? 'Maarifa Binafsi' : 'Personalized Insights'} desc={isSw ? 'Pata mapendekezo kulingana na data yako ya afya.' : 'Receive tailored recommendations and insights based on your health data.'} />
-          <FeatureCard icon="⏰" title={isSw ? 'Vikumbusho vya Dawa' : 'Medication Reminders'} desc={isSw ? 'Kamwe usikose dozi tena kwa vikumbusho vinavyofaa.' : 'Never miss a dose with friendly reminders for your medications.'} />
-          <FeatureCard icon="🤝" title={isSw ? 'Jumuiya' : 'Community Support'} desc={isSw ? 'Ungana na Wakenya wenzako katika safari ya kudhibiti kisukari.' : 'Connect with a supportive community of fellow Kenyans on their diabetes journey.'} />
-          <FeatureCard icon="📈" title={isSw ? 'Ufuatiliaji wa Maendeleo' : 'Progress Tracking'} desc={isSw ? 'Fuatilia mienendo na malengo kwa dashibodi rahisi.' : 'Track your progress and achieve your goals with intuitive tracking.'} />
+          <FeatureCard icon={Icons.insights} title={isSw ? 'Maarifa Binafsi' : 'Personalized Insights'} desc={isSw ? 'Pata mapendekezo kulingana na data yako ya afya.' : 'Receive tailored recommendations and insights based on your health data.'} />
+          <FeatureCard icon={Icons.reminders} title={isSw ? 'Vikumbusho vya Dawa' : 'Medication Reminders'} desc={isSw ? 'Kamwe usikose dozi tena kwa vikumbusho vinavyofaa.' : 'Never miss a dose with friendly reminders for your medications.'} />
+          <FeatureCard icon={Icons.community} title={isSw ? 'Jumuiya' : 'Community Support'} desc={isSw ? 'Ungana na Wakenya wenzako katika safari ya kudhibiti kisukari.' : 'Connect with a supportive community of fellow Kenyans on their diabetes journey.'} />
+          <FeatureCard icon={Icons.progress} title={isSw ? 'Ufuatiliaji wa Maendeleo' : 'Progress Tracking'} desc={isSw ? 'Fuatilia mienendo na malengo kwa dashibodi rahisi.' : 'Track your progress and achieve your goals with intuitive tracking.'} />
         </div>
       </section>
 
