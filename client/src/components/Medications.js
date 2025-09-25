@@ -7,7 +7,7 @@ const MedSchema = Yup.object({
   name: Yup.string().required('Required'),
   dose: Yup.string().required('Required'),
   time: Yup.string().required('Required'), // HH:MM
-  status: Yup.string().oneOf(['pending', 'taken', 'missed']).optional(),
+  status: Yup.string().oneOf(['pending', 'taken', 'missed']).notRequired(),
 });
 
 export default function Medications() {
