@@ -17,7 +17,6 @@ from glucose_predictor import analyze_user_patterns, generate_predictive_alerts,
 from gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
 
 # ---------------- Basic route ----------------
-
 @app.route('/')
 def index():
     return '<h1>Diabetes Management API</h1>'
