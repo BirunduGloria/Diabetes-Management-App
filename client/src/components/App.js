@@ -13,6 +13,11 @@ import FoodInsights from "./FoodInsights";
 import SmartAlerts from "./SmartAlerts";
 import Gamification from "./Gamification";
 import Education from "./Education";
+import Reminders from "./Reminders";
+import DoctorMessages from "./DoctorMessages";
+import Home from "./Home";
+import OnboardingGuard from "./OnboardingGuard";
+import ForgotPassword from "./ForgotPassword";
 
 function PrivateRoute({ children, ...rest }) {
   const { isAuthed } = useAuth();
@@ -41,17 +46,26 @@ function App() {
               <Route path="/login">
                 <Login />
               </Route>
+              <Route path="/forgot-password">
+                <ForgotPassword />
+              </Route>
               <Route path="/signup">
                 <Signup />
               </Route>
               <PrivateRoute path="/dashboard">
-                <Dashboard />
+                <OnboardingGuard requireProfile requireReading requireEducation>
+                  <Dashboard />
+                </OnboardingGuard>
               </PrivateRoute>
               <PrivateRoute path="/profile">
-                <Profile />
+                <OnboardingGuard>
+                  <Profile />
+                </OnboardingGuard>
               </PrivateRoute>
               <PrivateRoute path="/readings">
-                <Readings />
+                <OnboardingGuard requireProfile>
+                  <Readings />
+                </OnboardingGuard>
               </PrivateRoute>
               <PrivateRoute path="/medications">
                 <Medications />
@@ -66,10 +80,18 @@ function App() {
                 <Gamification />
               </PrivateRoute>
               <PrivateRoute path="/education">
-                <Education />
+                <OnboardingGuard requireProfile requireReading>
+                  <Education />
+                </OnboardingGuard>
               </PrivateRoute>
-              <Route path="/">
-                <Redirect to="/login" />
+              <PrivateRoute path="/reminders">
+                <Reminders />
+              </PrivateRoute>
+              <PrivateRoute path="/doctor-messages">
+                <DoctorMessages />
+              </PrivateRoute>
+              <Route exact path="/">
+                <Home />
               </Route>
             </Switch>
           </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -10,11 +10,7 @@ export default function Gamification() {
   const [dailyChallenges, setDailyChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadProgress();
-  }, [language]);
-
-  async function loadProgress() {
+  const loadProgress = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/user-progress?lang=${language}`, {
@@ -31,7 +27,11 @@ export default function Gamification() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [language, token]);
+
+  useEffect(() => {
+    loadProgress();
+  }, [loadProgress]);
 
   if (loading) {
     return <div className="card">Loading...</div>;

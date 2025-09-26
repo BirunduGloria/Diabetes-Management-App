@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useHistory } from 'react-router-dom';
+import OnboardingStepper from './OnboardingStepper';
 
 const ReadingSchema = Yup.object({
   value: Yup.number().min(40).max(500).required('Required'),
@@ -46,8 +48,11 @@ export default function Readings() {
   const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
+  const [setReminder, setSetReminder] = useState(false);
+  const [reminderTime, setReminderTime] = useState('08:00');
+  const history = useHistory();
 
-  async function fetchReadings() {
+  const fetchReadings = useCallback(async () => {
     try {
       const res = await fetch('/readings', {
         headers: { Authorization: `Bearer ${token}` },
@@ -58,9 +63,24 @@ export default function Readings() {
     } catch (e) {
       setError(e.message);
     }
-  }
+  }, [token]);
 
-  useEffect(() => { fetchReadings(); }, []);
+  useEffect(() => { fetchReadings(); }, [fetchReadings]);
+
+  // Prefetch educational insights to warm up Education screen
+  useEffect(() => {
+    let mounted = true;
+    async function prefetchEducation() {
+      if (!token) return;
+      try {
+        await fetch('/educational-insights', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch {}
+    }
+    prefetchEducation();
+    return () => { mounted = false; };
+  }, [token]);
 
   async function handleDelete(id) {
     if (!window.confirm('Delete this reading?')) return;
@@ -94,6 +114,27 @@ export default function Readings() {
       if (!res.ok) throw new Error(data.error || 'Create failed');
       setItems(prev => [...prev, data]);
       resetForm();
+
+      // Optional: create a reminder and navigate to Education
+      if (setReminder) {
+        try {
+          await fetch('/reminders', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              reminder_type: 'glucose',
+              title: 'Next glucose check',
+              message: 'Time to measure your blood sugar',
+              scheduled_time: reminderTime,
+              frequency: 'daily',
+            }),
+          });
+        } catch {}
+      }
+      history.push('/education');
     } catch (e) {
       setStatus(e.message);
     } finally {
@@ -103,6 +144,7 @@ export default function Readings() {
 
   return (
     <div>
+      <OnboardingStepper currentStep="readings" />
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
         <div className="crumb">
           <span>Home</span>
@@ -142,12 +184,28 @@ export default function Readings() {
               <div className="error"><ErrorMessage name="context" /></div>
 
               <label>Notes (optional)</label>
-              <Field name="notes" as="textarea" rows={2} />
+          <Field name="notes" as="textarea" rows={2} />
 
-              {status && <div className="error">{status}</div>}
-              <button className="btn" type="submit" disabled={isSubmitting}>Add Reading</button>
-            </Form>
-          )}
+          {status && <div className="error">{status}</div>}
+          <div className="card section" style={{ marginTop: 12 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" checked={setReminder} onChange={(e) => setSetReminder(e.target.checked)} />
+              Set reminder for next reading
+            </label>
+            {setReminder && (
+              <div style={{ marginTop: 8 }}>
+                <label>Reminder Time</label>
+                <input type="time" value={reminderTime} onChange={(e) => setReminderTime(e.target.value)} />
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn" type="submit" disabled={isSubmitting}>Add Reading</button>
+            <button className="btn btn-outline" type="button" onClick={() => history.push('/education')}>Skip & Continue</button>
+          </div>
+        </Form>
+      )}
         </Formik>
       </div>
 

@@ -10,11 +10,12 @@ from datetime import datetime
 
 # Local imports
 from config import app, db, api
-from models import User, Reading, Medication, Meal, Doctor, reading_meals
+from models import User, Reading, Medication, Meal, Doctor, reading_meals, Reminder, EducationalTip, DoctorMessage, BMISnapshot
 from schemas import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
 from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
 from glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
 from gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
+from educational_insights import get_personalized_insights, get_food_recommendations_by_status, get_glucose_trend
 
 # ---------------- Basic route ----------------
 
@@ -96,6 +97,42 @@ class CheckSession(Resource):
             return resp, 200
         else:
             return {'error': 'User not found'}, 404
+
+class PasswordForgot(Resource):
+    def post(self):
+        data = request.get_json() or {}
+        email = (data.get('email') or '').strip().lower()
+        if not email:
+            return {'error': 'email is required'}, 400
+        # In production, generate a reset token and email it. Here, return a generic response.
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Do not reveal user existence; return same message
+            return {'message': 'If the email exists, a reset link has been sent.'}, 200
+        # Stub success response
+        return {'message': 'If the email exists, a reset link has been sent.'}, 200
+
+class PasswordUpdate(Resource):
+    @jwt_required()
+    def post(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+        data = request.get_json() or {}
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        if not current_password or not new_password:
+            return {'error': 'current_password and new_password are required'}, 400
+        if not user.authenticate(current_password):
+            return {'error': 'Current password is incorrect'}, 400
+        try:
+            user.password_hash = new_password
+            db.session.commit()
+            return {'message': 'Password updated successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
 
 # ---------------- Helpers (dates/times/validation) ----------------
 
@@ -412,6 +449,8 @@ class UserBMI(Resource):
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
 api.add_resource(CheckSession, '/check_session')
+api.add_resource(PasswordForgot, '/password/forgot')
+api.add_resource(PasswordUpdate, '/password/update')
 api.add_resource(Readings, '/readings')
 api.add_resource(ReadingById, '/readings/<int:id>')
 api.add_resource(UserProfile, '/me')
@@ -572,10 +611,36 @@ class Doctors(Resource):
         if Doctor.query.filter_by(email=data['email']).first():
             return {'error': 'Doctor with this email already exists'}, 400
         try:
-            doc = Doctor(name=data['name'].strip(), email=data['email'].strip())
+            doc = Doctor(
+                name=data['name'].strip(),
+                email=data['email'].strip(),
+                phone=(data.get('phone') or '').strip() or None,
+            )
             db.session.add(doc)
             db.session.commit()
             return doctor_schema.dump(doc), 201
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+
+class DoctorsSeed(Resource):
+    def post(self):
+        """Seed the database with a few sample doctors if table is empty."""
+        try:
+            count = Doctor.query.count()
+            if count > 0:
+                return {'message': 'Doctors already exist', 'count': count}, 200
+            samples = [
+                { 'name': 'Dr. Amina Wanjiru', 'email': 'amina.wanjiru@kenhealth.org', 'phone': '+254700111222' },
+                { 'name': 'Dr. Brian Otieno', 'email': 'b.otieno@kenhealth.org', 'phone': '+254711222333' },
+                { 'name': 'Dr. Carol Njeri', 'email': 'carol.njeri@kenhealth.org', 'phone': '+254722333444' },
+                { 'name': 'Dr. Daniel Mwangi', 'email': 'daniel.mwangi@kenhealth.org', 'phone': '+254733444555' },
+                { 'name': 'Dr. Esther Mutua', 'email': 'e.mutua@kenhealth.org', 'phone': '+254744555666' },
+            ]
+            for s in samples:
+                db.session.add(Doctor(name=s['name'], email=s['email'], phone=s.get('phone')))
+            db.session.commit()
+            return {'message': 'Seeded', 'count': len(samples)}, 201
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 400
@@ -589,6 +654,7 @@ class DoctorPatients(Resource):
         return {'doctor': doctor_schema.dump(doc), 'patients': patients}, 200
 
 api.add_resource(Doctors, '/doctors')
+api.add_resource(DoctorsSeed, '/doctors/seed')
 api.add_resource(DoctorPatients, '/doctors/<int:doctor_id>/patients')
 
 # ---------------- Kenyan Food Database ----------------
@@ -788,6 +854,378 @@ class UserProgress(Resource):
         }, 200
 
 api.add_resource(UserProgress, '/user-progress')
+
+# ---------------- Enhanced Features ----------------
+
+# Dashboard endpoint
+class Dashboard(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return {'error': 'User not found'}, 404
+        
+        # Get glucose trend
+        glucose_trend = get_glucose_trend(user_id, days=30)
+        
+        # Get latest reading
+        latest_reading = Reading.query.filter_by(user_id=user_id).order_by(
+            Reading.date.desc(), Reading.time.desc()
+        ).first()
+        
+        # Get recent readings for chart
+        recent_readings = Reading.query.filter_by(user_id=user_id).order_by(
+            Reading.date.desc(), Reading.time.desc()
+        ).limit(30).all()
+        
+        # Get personalized insights
+        insights = get_personalized_insights(user_id)
+        
+        # Get flagged readings count
+        flagged_count = Reading.query.filter_by(user_id=user_id, is_flagged=True).count()
+        
+        return {
+            'user_profile': user.to_dict(),
+            'glucose_trend': glucose_trend,
+            'latest_reading': latest_reading.to_dict() if latest_reading else None,
+            'recent_readings': [r.to_dict() for r in recent_readings],
+            'insights': insights,
+            'flagged_readings_count': flagged_count,
+            'summary_cards': {
+                'total_readings': len(recent_readings),
+                'average_glucose': glucose_trend['average'],
+                'bmi': user.bmi,
+                'bmi_category': user.bmi_category
+            }
+        }, 200
+
+# Educational Insights endpoint
+class EducationalInsights(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        insights = get_personalized_insights(user_id)
+
+        # Determine language if provided (default en)
+        language = request.args.get('lang', 'en')
+
+        # Latest reading and BMI category
+        latest_reading = Reading.query.filter_by(user_id=user_id).order_by(
+            Reading.date.desc(), Reading.time.desc()
+        ).first()
+        latest_status = latest_reading.glucose_status if latest_reading else None
+        bmi_cat = user.bmi_category if user else None
+
+        # Base recommendations by glucose status
+        status_recs = get_food_recommendations_by_status(latest_status) if latest_status else None
+
+        # Kenyan-local general recommendations by diabetes type
+        dtype = (user.diabetes_type or 'type2') if user else 'type2'
+        base_local = get_food_recommendations(dtype, language)
+
+        # Merge logic: start from status-based recs, then enrich with BMI-aware tips and local lists
+        recommended = []
+        avoid = []
+        tips = []
+
+        # From status recommendations (already Kenya-focused in our helper)
+        if status_recs:
+            recommended += status_recs.get('recommended', [])
+            avoid += status_recs.get('avoid', [])
+            if status_recs.get('tips'):
+                tips.append(status_recs['tips'])
+
+        # From base_local
+        if base_local:
+            recommended += base_local.get('recommended', [])
+            avoid += base_local.get('avoid', [])
+            if base_local.get('tips'):
+                tips.append(base_local['tips'])
+
+        # BMI-aware guidance
+        if bmi_cat == 'Overweight' or bmi_cat == 'Obese':
+            tips.append('Prefer high-fiber, low-GI staples (e.g., sukuma wiki, ndengu, terere, beans). Keep chapati/mandazi minimal; choose ugali wa mtama/brown rice in small portions.')
+            avoid += ['Fried snacks (samosa, bhajia) often', 'Sugary drinks', 'Large portions of white ugali/rice']
+        elif bmi_cat == 'Underweight':
+            tips.append('Include nutrient-dense foods to reach a healthy weight: add avocado, eggs, beans, groundnuts, and whole grains. Keep sugars controlled.')
+            recommended += ['Avocado', 'Eggs', 'Beans/ndengu', 'Groundnuts', 'Millet ugali']
+        elif bmi_cat == 'Normal weight':
+            tips.append('Maintain balance: non-starchy vegetables, lean proteins (fish, chicken), healthy fats, and whole grains.')
+
+        # De-duplicate while preserving order
+        def uniq(seq):
+            seen = set()
+            out = []
+            for x in seq:
+                if x not in seen:
+                    seen.add(x)
+                    out.append(x)
+            return out
+
+        food_recommendations = {
+            'recommended': uniq(recommended),
+            'avoid': uniq(avoid),
+            'tips': ' '.join(uniq(tips)) if tips else None,
+            'latest_status': latest_status,
+            'bmi_category': bmi_cat,
+        }
+
+        # Build detailed reasons/tags for UI "why" toggle
+        def reason_for(item: str, list_type: str):
+            lower = (item or '').lower()
+            # Heuristic keyword-based reasons
+            if any(k in lower for k in ['sukuma', 'kale', 'spinach', 'terere', 'managu', 'mboga']):
+                return {'reason_en': 'High fiber, low GI veggie; supports glucose control', 'reason_sw': 'Nyuzinyuzi nyingi, GI ya chini; husaidia kudhibiti sukari', 'tags': ['high-fiber','low-GI','veggies']}
+            if any(k in lower for k in ['bean', 'ndengu', 'lentil', 'pojo']):
+                return {'reason_en': 'Protein and fiber; slower glucose rise', 'reason_sw': 'Protini na nyuzinyuzi; hupunguza kasi ya kupanda kwa sukari', 'tags': ['protein','fiber','low-GI']}
+            if 'avocado' in lower:
+                return {'reason_en': 'Healthy fats; increases satiety', 'reason_sw': 'Mafuta mazuri; hukutosheleza', 'tags': ['healthy-fats']}
+            if any(k in lower for k in ['egg','mayai']):
+                return {'reason_en': 'Lean protein; minimal impact on glucose', 'reason_sw': 'Protini konda; athari ndogo kwa sukari', 'tags': ['protein']}
+            if any(k in lower for k in ['millet', 'mtama']):
+                return {'reason_en': 'Whole grain option; lower GI than refined ugali', 'reason_sw': 'Nafaka kamili; GI ya chini kuliko ugali mweupe', 'tags': ['whole-grain','lower-GI']}
+            if 'brown rice' in lower or 'brown' in lower:
+                return {'reason_en': 'Higher fiber than white rice; steadier glucose', 'reason_sw': 'Nyuzinyuzi zaidi kuliko wali mweupe; sukari tulivu', 'tags': ['higher-fiber','lower-GI']}
+            if any(k in lower for k in ['sugary', 'soda', 'juice', 'sweet']):
+                return {'reason_en': 'Rapid glucose spike; avoid especially with high readings', 'reason_sw': 'Huinua sukari haraka; epuka hasa ikiwa juu', 'tags': ['high-sugar']}
+            if any(k in lower for k in ['white ugali', 'white rice', 'chapati', 'mandazi']):
+                return {'reason_en': 'Refined carb; higher GI and portion-sensitive', 'reason_sw': 'Wanga uliosafishwa; GI ya juu na nyeti kwa kiasi', 'tags': ['refined-carb','high-GI']}
+            if any(k in lower for k in ['fried', 'bhajia', 'samosa', 'chips']):
+                return {'reason_en': 'Fried/refined; may worsen insulin resistance', 'reason_sw': 'Vyakula vya kukaanga/ulosafishwa; vinaweza kuongeza usugu wa insulini', 'tags': ['fried','refined']}
+            # Fallback generic reasons
+            return {'reason_en': 'Generally aligned with your current plan', 'reason_sw': 'Kwa ujumla inaendana na mpango wako wa sasa', 'tags': []}
+
+        food_recommendations['recommended_detailed'] = [
+            {'item': it, **reason_for(it, 'recommended')} for it in food_recommendations['recommended']
+        ]
+        food_recommendations['avoid_detailed'] = [
+            {'item': it, **reason_for(it, 'avoid')} for it in food_recommendations['avoid']
+        ]
+
+        return {
+            'insights': insights,
+            'food_recommendations': food_recommendations
+        }, 200
+
+# Reminders endpoint
+class Reminders(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        reminders = Reminder.query.filter_by(user_id=user_id, is_active=True).all()
+        return {'reminders': [r.to_dict() for r in reminders]}, 200
+    
+    @jwt_required()
+    def post(self):
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        try:
+            reminder = Reminder(
+                user_id=user_id,
+                reminder_type=data['reminder_type'],
+                title=data['title'],
+                message=data.get('message'),
+                scheduled_time=datetime.strptime(data['scheduled_time'], '%H:%M').time(),
+                frequency=data.get('frequency', 'daily')
+            )
+            
+            db.session.add(reminder)
+            db.session.commit()
+            
+            return {'reminder': reminder.to_dict()}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+
+class ReminderById(Resource):
+    @jwt_required()
+    def put(self, id):
+        user_id = get_jwt_identity()
+        reminder = Reminder.query.filter_by(id=id, user_id=user_id).first()
+        
+        if not reminder:
+            return {'error': 'Reminder not found'}, 404
+        
+        data = request.get_json()
+        
+        try:
+            if 'is_active' in data:
+                reminder.is_active = data['is_active']
+            if 'scheduled_time' in data:
+                reminder.scheduled_time = datetime.strptime(data['scheduled_time'], '%H:%M').time()
+            if 'frequency' in data:
+                reminder.frequency = data['frequency']
+            
+            db.session.commit()
+            return {'reminder': reminder.to_dict()}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+    
+    @jwt_required()
+    def delete(self, id):
+        user_id = get_jwt_identity()
+        reminder = Reminder.query.filter_by(id=id, user_id=user_id).first()
+        
+        if not reminder:
+            return {'error': 'Reminder not found'}, 404
+        
+        try:
+            db.session.delete(reminder)
+            db.session.commit()
+            return {'message': 'Reminder deleted successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+
+# Doctor Messages endpoint
+class DoctorMessages(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user or not user.doctor_id:
+            return {'error': 'No assigned doctor found'}, 404
+        
+        messages = DoctorMessage.query.filter_by(
+            user_id=user_id, 
+            doctor_id=user.doctor_id
+        ).order_by(DoctorMessage.created_at.desc()).limit(50).all()
+        
+        return {'messages': [m.to_dict() for m in messages]}, 200
+    
+    @jwt_required()
+    def post(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        if not user or not user.doctor_id:
+            return {'error': 'No assigned doctor found'}, 404
+        
+        try:
+            message = DoctorMessage(
+                user_id=user_id,
+                doctor_id=user.doctor_id,
+                sender_type='user',
+                message=data['message'],
+                is_emergency=data.get('is_emergency', False)
+            )
+            
+            db.session.add(message)
+            db.session.commit()
+            
+            return {'message': message.to_dict()}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+
+# Enhanced User Profile endpoint
+class EnhancedUserProfile(Resource):
+    @jwt_required()
+    def put(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        data = request.get_json()
+        
+        if not user:
+            return {'error': 'User not found'}, 404
+        
+        try:
+            # Update profile fields
+            if 'age' in data:
+                user.age = data['age']
+            if 'gender' in data:
+                user.gender = data['gender']
+            if 'height_cm' in data:
+                user.height_cm = data['height_cm']
+            if 'weight_kg' in data:
+                user.weight_kg = data['weight_kg']
+            if 'emergency_contact_name' in data:
+                user.emergency_contact_name = data['emergency_contact_name']
+            if 'emergency_contact_phone' in data:
+                user.emergency_contact_phone = data['emergency_contact_phone']
+            if 'last_hospital_visit' in data:
+                user.last_hospital_visit = datetime.strptime(data['last_hospital_visit'], '%Y-%m-%d').date()
+            
+            db.session.commit()
+
+            # After updating, record BMI snapshot if height/weight available
+            try:
+                snapshot = BMISnapshot(
+                    user_id=user.id,
+                    bmi=user.bmi,
+                    weight_kg=user.weight_kg,
+                    height_cm=user.height_cm
+                )
+                db.session.add(snapshot)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+            return {'user': user.to_dict()}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+
+# Enhanced Readings with validation
+class EnhancedReadings(Resource):
+    @jwt_required()
+    def post(self):
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        try:
+            reading = Reading(
+                user_id=user_id,
+                value=data['value'],
+                date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
+                time=datetime.strptime(data['time'], '%H:%M').time(),
+                context=data.get('context', 'random'),
+                notes=data.get('notes')
+            )
+            
+            # Auto-flag abnormal readings
+            glucose_status = reading.glucose_status
+            if glucose_status in ['high', 'low']:
+                reading.is_flagged = True
+            
+            db.session.add(reading)
+            db.session.commit()
+            
+            # Get personalized insights based on this reading
+            insights = get_personalized_insights(user_id)
+            
+            return {
+                'reading': reading.to_dict(),
+                'insights': insights[:2]  # Return top 2 insights
+            }, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+
+# BMI History endpoint
+class BMIHistory(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        limit = int(request.args.get('limit', 20))
+        snapshots = BMISnapshot.query.filter_by(user_id=user_id).order_by(BMISnapshot.created_at.desc()).limit(limit).all()
+        return {'history': [s.to_dict() for s in snapshots]}, 200
+
+# Register new endpoints
+api.add_resource(Dashboard, '/dashboard')
+api.add_resource(EducationalInsights, '/educational-insights')
+api.add_resource(Reminders, '/reminders')
+api.add_resource(ReminderById, '/reminders/<int:id>')
+api.add_resource(DoctorMessages, '/doctor-messages')
+api.add_resource(EnhancedUserProfile, '/profile/enhanced')
+api.add_resource(EnhancedReadings, '/readings/enhanced')
+api.add_resource(BMIHistory, '/bmi-history')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555, debug=True)

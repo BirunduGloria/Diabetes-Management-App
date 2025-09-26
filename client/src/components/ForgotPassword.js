@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
-import { useAuth } from './AuthContext';
-import { useHistory, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
-const LoginSchema = Yup.object({
+const ForgotSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Required'),
-  password: Yup.string().min(6, 'Too short').required('Required'),
 });
 
-export default function Login() {
-  const { setToken, setUser, setEducation, setAdvice } = useAuth();
-  const history = useHistory();
+export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
 
   return (
     <div>
@@ -21,33 +18,32 @@ export default function Login() {
         <div className="crumb">
           <span>Home</span>
           <span className="sep">›</span>
-          <b>Login</b>
+          <b>Forgot Password</b>
         </div>
         <div className="accent-line" />
       </div>
 
       <div className="card section" style={{ maxWidth: 480, margin: '0 auto' }}>
-        <h2 style={{ marginTop: 0 }}>Welcome back</h2>
+        <h2 style={{ marginTop: 0 }}>Reset your password</h2>
+        <p>Enter your account email. If it exists, you'll receive a reset link.</p>
         {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
+        {message && <div className="success" style={{ marginBottom: 12 }}>{message}</div>}
         <Formik
-          initialValues={{ email: '', password: '' }}
-          validationSchema={LoginSchema}
+          initialValues={{ email: '' }}
+          validationSchema={ForgotSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setError(null);
+            setMessage(null);
             setLoading(true);
             try {
-              const res = await fetch('/login', {
+              const res = await fetch('/password/forgot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: values.email.trim(), password: values.password }),
+                body: JSON.stringify({ email: values.email.trim() })
               });
               const data = await res.json();
-              if (!res.ok) throw new Error(data.error || 'Login failed');
-              setToken(data.access_token);
-              setUser(data.user);
-              if (data.education) setEducation(data.education);
-              if (data.advice) setAdvice(data.advice);
-              history.push('/profile');
+              if (!res.ok) throw new Error(data.error || 'Request failed');
+              setMessage(data.message || 'If the email exists, a reset link has been sent.');
             } catch (e) {
               setError(e.message);
             } finally {
@@ -61,22 +57,15 @@ export default function Login() {
               <label>Email</label>
               <Field type="email" name="email" placeholder="you@example.com" />
               <div className="error"><ErrorMessage name="email" /></div>
-
-              <label>Password</label>
-              <Field type="password" name="password" placeholder="••••••••" />
-              <div className="error"><ErrorMessage name="password" /></div>
-
-              <button type="submit" className="btn" disabled={loading || isSubmitting}>
-                {loading ? 'Logging in…' : 'Log In'}
+              <button className="btn" type="submit" disabled={loading || isSubmitting}>
+                {loading ? 'Sending…' : 'Send reset link'}
               </button>
             </Form>
           )}
         </Formik>
         <div style={{ marginTop: 12 }}>
           <small>
-            <NavLink to="/forgot-password">Forgot password?</NavLink>
-            <span style={{ margin: '0 6px' }}>|</span>
-            Don&apos;t have an account? <NavLink to="/signup">Create one</NavLink>
+            <NavLink to="/login">Back to Login</NavLink>
           </small>
         </div>
       </div>

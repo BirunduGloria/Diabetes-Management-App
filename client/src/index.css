@@ -106,6 +106,7 @@ body {
   border-color: var(--border);
 }
 .btn-outline:hover { background: rgba(47,243,224,0.1); border-color: var(--cyan); }
+.btn-small { padding: 6px 10px; font-size: 0.85rem; border-radius: 8px; }
 
 /* Forms */
 label { font-size: 0.92rem; color: var(--muted); }
@@ -147,6 +148,22 @@ input:focus, select:focus, textarea:focus {
 .badge-pending { color: #cbd5e1; background: #1f2937; border-color: #334155; }
 .badge-taken { color: #052e1f; background: #34d399; border-color: #10b981; }
 .badge-missed { color: #3b0d0d; background: #fda4a4; border-color: #e5484d; }
+
+/* Chips (tags) */
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  border: 1px solid #164e63;
+  background: #07333d;
+  color: #c3f3ee;
+}
+.chip-warn {
+  border-color: #7f1d1d;
+  background: #3f0e0e;
+  color: #fbcaca;
+}
 
 /* Dashboard breadcrumb header */
 .crumb-wrap {

@@ -2,7 +2,7 @@
 from flask_marshmallow import Marshmallow
 
 from config import app
-from models import User, Reading, Medication, Meal, Doctor
+from models import User, Reading, Medication, Meal, Doctor, Reminder, EducationalTip, DoctorMessage, BMISnapshot
 
 ma = Marshmallow(app)
 
@@ -34,5 +34,29 @@ class MealSchema(ma.SQLAlchemyAutoSchema):
 class DoctorSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Doctor
+        load_instance = False
+        include_fk = True
+
+class ReminderSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Reminder
+        load_instance = False
+        include_fk = True
+
+class EducationalTipSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = EducationalTip
+        load_instance = False
+        include_fk = True
+
+class DoctorMessageSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = DoctorMessage
+        load_instance = False
+        include_fk = True
+
+class BMISnapshotSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = BMISnapshot
         load_instance = False
         include_fk = True
