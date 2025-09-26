@@ -11,9 +11,7 @@ export default function Home() {
   }
 
   return (
-    <div className="landing" style={{
-backgroundImage: 'url("https://i.pinimg.com/736x/de/61/62/de616273e14c5c0ce42a0f681e47d982.jpg")',  minHeight: '100vh'
-}}>
+    <div className="landing">
       <div style={{ textAlign: 'center', padding: '20px' }}>
                 <h1 style={{ marginTop: 0 }}>Diabetes Management</h1>
         <p>Track glucose, understand trends, get local food advice, and stay connected with your doctor.</p>
