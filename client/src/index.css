@@ -17,30 +17,15 @@ html, body, #root { height: 100%; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  background: radial-gradient(1200px 800px at 20% -10%, var(--cyan-10), transparent),
-              radial-gradient(1200px 800px at 120% 20%, var(--cyan-20), transparent),
-              var(--black);
+  /* Global background image across the whole app */
+  background-color: var(--black);
+  background-image: url("https://i.pinimg.com/736x/de/61/62/de616273e14c5c0ce42a0f681e47d982.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text);
 }
-
-/* Landing page: white background, maintain font and navbar styling */
-.landing {
-  min-height: 100%;
-  background: #ffffff;
-  color: #0a0a0a; /* darker text for readability on white */
-}
-.landing .card,
-.landing .crumb-wrap {
-  background: #ffffff;
-  color: #0a0a0a;
-  border-color: #e5e7eb; /* light border for contrast on white */
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-}
-.landing .accent-line { display: none; }
-.landing .btn.btn-outline { color: #0a0a0a; border-color: #d1d5db; }
-
-/* Keep navbar cyan regardless of page */
-.navbar { background: rgba(10,10,10,0.7); }
 
 /* Layout */
 .container {
