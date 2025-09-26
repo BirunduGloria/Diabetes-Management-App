@@ -1,26 +1,123 @@
-# 🇰🇪 Kenyan Diabetes Management App
+# D-TRACK: Diabetes Management App
 
-A culturally-adapted diabetes management platform designed specifically for Kenyan patients, offering bilingual support (English/Swahili), local food insights, and AI-powered glucose predictions.
+A full-stack diabetes management application that helps patients log glucose readings, understand trends, get local food guidance, set reminders, and contact their doctor. Built with a Flask API backend and a React frontend. Localized for Kenya with bilingual (English/Swahili) support and local food insights.
 
-## 🎯 Project Overview
+## Table of Contents
+- Overview
+- Features
+- Tech Stack
+- Project Structure
+- Getting Started
+- Running the App
+- API Overview
+- Data Models & Relationships
+- Forms & Validation
+- Client-side Routing
+- Troubleshooting
 
-This full-stack application addresses the unique needs of Kenya's 458,000+ diabetes patients through localized content, gamification, and smart healthcare integration. Built with Flask (backend) and React (frontend), it provides a comprehensive diabetes management solution that understands Kenyan culture, food, and healthcare system.
+## Overview
+
+This app provides a centralized dashboard for recent readings, BMI, insights and education. It includes personalized food recommendations based on latest glucose status, BMI category, and localized Kenyan guidance. Users can set reminders, message their doctor, and track progress.
+
+## Features
+
+- Readings: Fasting, pre-meal, post-meal, bedtime, random.
+- Trends: Glucose chart (last 30 readings), BMI trend, summary cards.
+- Food guidance: “What to eat now” with reasons/tags (low-GI, high-fiber, etc.).
+- Reminders: Medication and check-in reminders with schedules.
+- Doctor contact: Assigned doctor card with call/email; secure messaging with emergency flag.
+- Education: Localized tips and onboarding education.
+- Gamification: Progress and badges (optional module).
+
+## Tech Stack
+
+- Frontend: React, React Router, Formik + Yup, Recharts, vanilla CSS.
+- Backend: Flask, Flask-RESTful, Flask-JWT-Extended, Flask-CORS, Flask-Migrate, SQLAlchemy, Marshmallow.
+- Database: SQLite (development).
+
+## Project Structure
+
+```text
+Diabetes-Management-App/
+├─ client/
+│  ├─ src/
+│  │  ├─ components/
+│  │  │  ├─ App.js, NavBar.js, Dashboard.js, Readings.js, profile.js
+│  │  │  ├─ education.js, Smartalert.js, DoctorMessages.js, Reminders.js
+│  │  │  ├─ LanguageContext.js, AuthContext.js
+│  │  ├─ index.js, index.css
+│  └─ package.json
+├─ server/
+│  ├─ app.py, config.py, schema.py, models.py
+│  ├─ migrations/
+└─ README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 16
+- Python >= 3.9
+
+### Backend Setup
+
+1. Create and activate a virtual environment.
+2. Install dependencies:
+   ```bash
+   pip install -r server/requirements.txt
+   ```
+3. Initialize the database (SQLite by default):
+   ```bash
+   export FLASK_APP=server/app.py
+   flask db upgrade || (flask db init && flask db migrate && flask db upgrade)
+   ```
+4. (Optional) Seed sample doctors with phone numbers:
+   ```bash
+   curl -X POST http://localhost:5555/doctors/seed
+   ```
+
+### Frontend Setup
+
+```bash
+cd client
+npm install
+```
+
+## Running the App
+
+### Start the Backend
+
+```bash
+python server/app.py
+# or
+FLASK_APP=server/app.py flask run -p 5555
+```
+
+### Start the Frontend
+
+```bash
+cd client
+npm start
+```
+
+By default, the backend runs on [http://localhost:5555](http://localhost:5555) and the frontend on [http://localhost:3000](http://localhost:3000).
 
 ## 🚀 Key Features
 
-### ✅ **Core Diabetes Management**
+### **Core Diabetes Management**
 - Blood sugar tracking with color-coded results
 - Medication reminders with overdue detection
 - BMI calculator with health insights
 - Doctor-patient relationship management
 
-### ✅ **Kenyan Localization**
+###  **Kenyan Localization**
 - **Bilingual Support**: Full English/Swahili interface
 - **Local Food Database**: 8 traditional foods (ugali, sukuma wiki, chapati, etc.)
 - **Cultural Context**: NHIF integration, traditional herbs awareness
 - **Local Statistics**: Kenya-specific diabetes education
 
-### ✅ **Smart Features**
+### **Smart Features**
 - **AI-Powered Alerts**: Glucose pattern analysis and predictions
 - **Food Impact Predictor**: Personalized recommendations for Kenyan foods
 - **Gamification**: Daily challenges, badges, progress tracking
@@ -29,7 +126,8 @@ This full-stack application addresses the unique needs of Kenya's 458,000+ diabe
 ## 🏗️ Technical Architecture
 
 ### Backend (Flask API)
-```
+
+```text
 server/
 ├── app.py                 # Main Flask application with 15+ API endpoints
 ├── config.py             # Database and app configuration
@@ -42,7 +140,8 @@ server/
 ```
 
 ### Frontend (React SPA)
-```
+
+```text
 client/src/
 ├── components/
 │   ├── App.js            # Main app with routing (9 routes)
@@ -62,7 +161,8 @@ client/src/
 ```
 
 ### Database Schema
-```
+
+```text
 Models & Relationships:
 ├── User (1:many → Reading, Medication) + (many:1 → Doctor)
 ├── Doctor (1:many → User)
@@ -71,14 +171,16 @@ Models & Relationships:
 └── Meal (many:many → Reading via reading_meals)
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
-### Prerequisites
+### Requirements
+
 - Python 3.8+
 - Node.js 14+
 - Git
 
 ### 1. Clone and Setup Repository
+
 ```bash
 git clone <your-repo-url>
 cd Diabetes-Management-App
@@ -93,6 +195,7 @@ pipenv shell
 ```
 
 ### 3. Database Setup
+
 ```bash
 # Initialize database and migrations
 flask db init
@@ -104,6 +207,7 @@ python seed.py
 ```
 
 ### 4. Start Backend Server
+
 ```bash
 python app.py
 ```
@@ -117,12 +221,13 @@ npm install
 ```
 
 ### 6. Start Frontend Development Server
+
 ```bash
 npm start
 ```
 The React app will be available at `http://localhost:3000`
 
-## 🧪 Testing the Application
+##  Testing the Application
 
 ### Sample Login Credentials
 After running the seed script, you can login with:
@@ -282,50 +387,15 @@ def howdy():
 
 ---
 
-## Updating Your README.md
 
-`README.md` is a Markdown file that describes your project. These files can be
-used in many different ways- you may have noticed that we use them to generate
-entire Canvas lessons- but they're most commonly used as homepages for online
-Git repositories. **When you develop something that you want other people to
-use, you need to have a README.**
+## Authors
 
-Markdown is not a language that we cover in Flatiron's Software Engineering
-curriculum, but it's not a particularly difficult language to learn (if you've
-ever left a comment on Reddit, you might already know the basics). Refer to the
-cheat sheet in this lesson's resources for a basic guide to Markdown.
+- Birundu
+- Nicholas
+- Mohamed
 
-### What Goes into a README?
+## License
 
-This README should serve as a template for your own- go through the important
-files in your project and describe what they do. Each file that you edit (you
-can ignore your migration files) should get at least a paragraph. Each function
-should get a small blurb.
+MIT License
 
-You should descibe your application first, and with a good level of detail. The
-rest should be ordered by importance to the user. (Probably routes next, then
-models.)
-
-Screenshots and links to resources that you used throughout are also useful to
-users and collaborators, but a little more syntactically complicated. Only add
-these in if you're feeling comfortable with Markdown.
-
----
-
-## Conclusion
-
-A lot of work goes into a full-stack application, but it all relies on concepts
-that you've practiced thoroughly throughout this phase. Hopefully this template
-and guide will get you off to a good start with your Phase 4 Project.
-
-Happy coding!
-
----
-
-## Resources
-
-- [Setting up a respository - Atlassian](https://www.atlassian.com/git/tutorials/setting-up-a-repository)
-- [Create a repo- GitHub Docs](https://docs.github.com/en/get-started/quickstart/create-a-repo)
-- [Markdown Cheat Sheet](https://www.markdownguide.org/cheat-sheet/)
-- [Python Circular Imports - StackAbuse](https://stackabuse.com/python-circular-imports/)
-- [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/)
+Copyright (c) 2025 Birundu, Nicholas, and Mohamed
