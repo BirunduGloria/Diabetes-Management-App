@@ -27,4 +27,9 @@ api = Api(app)
 jwt = JWTManager(app)
 
 
-CORS(app)
+CORS(app, origins=[
+    "http://localhost:3000",  # React development server
+    "http://127.0.0.1:3000",  # React development server (alternative)
+    "http://localhost:3001",
+   "https://diabetes-management-app-gamma.vercel.app"
+])
