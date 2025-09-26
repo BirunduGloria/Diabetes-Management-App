@@ -274,3 +274,4 @@ def get_food_recommendations(diabetes_type, language='en'):
     }
     
     return recommendations.get(diabetes_type, {}).get(language, [])
+

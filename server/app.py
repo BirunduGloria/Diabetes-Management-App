@@ -18,7 +18,6 @@ from gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badg
 from educational_insights import get_personalized_insights, get_food_recommendations_by_status, get_glucose_trend
 
 # ---------------- Basic route ----------------
-
 @app.route('/')
 def index():
     return '<h1>Diabetes Management API</h1>'

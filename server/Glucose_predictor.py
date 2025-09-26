@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 Glucose Prediction and Alert System
 Analyzes user patterns to provide predictive alerts
@@ -23,7 +23,7 @@ def analyze_user_patterns(readings):
         'recent_trend': 'stable'
     }
     
-    # Categorize readings
+    
     for reading in readings:
         value = reading.value
         context = reading.context
@@ -36,7 +36,7 @@ def analyze_user_patterns(readings):
         
         patterns['time_patterns'][hour].append(value)
         
-        # Count problematic readings
+        
         if context == 'pre_meal' and value > 130:
             patterns['high_readings_count'] += 1
         elif context == 'post_meal' and value > 180:
@@ -44,13 +44,13 @@ def analyze_user_patterns(readings):
         elif value < 80:
             patterns['low_readings_count'] += 1
     
-    # Calculate averages
+
     if patterns['avg_pre_meal']:
         patterns['avg_pre_meal'] = statistics.mean(patterns['avg_pre_meal'])
     if patterns['avg_post_meal']:
         patterns['avg_post_meal'] = statistics.mean(patterns['avg_post_meal'])
     
-    # Determine recent trend (last 5 readings)
+    
     recent_values = [r.value for r in readings[-5:]]
     if len(recent_values) >= 3:
         if recent_values[-1] > recent_values[0] + 20:
@@ -67,7 +67,7 @@ def generate_predictive_alerts(user, patterns, language='en'):
     
     alerts = []
     
-    # High glucose pattern alert
+    
     if patterns['high_readings_count'] > len(patterns.get('avg_pre_meal', [])) * 0.4:
         alerts.append({
             'type': 'pattern_warning',
@@ -96,7 +96,7 @@ def generate_predictive_alerts(user, patterns, language='en'):
             }
         })
     
-    # Rising trend alert
+    
     if patterns['recent_trend'] == 'rising':
         alerts.append({
             'type': 'trend_warning',
@@ -125,7 +125,7 @@ def generate_predictive_alerts(user, patterns, language='en'):
             }
         })
     
-    # Time-based pattern alert
+    
     morning_avg = statistics.mean(patterns['time_patterns'].get(8, [100])) if patterns['time_patterns'].get(8) else None
     if morning_avg and morning_avg > 140:
         alerts.append({
@@ -155,7 +155,7 @@ def generate_predictive_alerts(user, patterns, language='en'):
             }
         })
     
-    # Low glucose pattern
+    
     if patterns['low_readings_count'] > 2:
         alerts.append({
             'type': 'low_glucose_warning',
@@ -190,7 +190,7 @@ def get_meal_specific_predictions(recent_readings, meal_context, language='en'):
     """Provide meal-specific predictions based on patterns"""
     predictions = []
     
-    # Find similar meal contexts in history
+    
     similar_readings = [r for r in recent_readings if r.context == meal_context]
     
     if len(similar_readings) >= 3:
@@ -217,7 +217,7 @@ def get_food_impact_prediction(food_name, user_patterns, language='en'):
     if not food_data:
         return None
     
-    # Base prediction on food's glucose impact and user's patterns
+    
     glucose_impact = food_data['glucose_impact']
     user_avg = user_patterns.get('avg_post_meal', 150) if user_patterns else 150
     
@@ -228,7 +228,7 @@ def get_food_impact_prediction(food_name, user_patterns, language='en'):
         'recommendations': food_data['diabetes_tips'][language]
     }
     
-    # Estimate glucose spike based on food and user history
+    
     if glucose_impact == 'very_high':
         prediction['estimated_spike'] = 80 + (user_avg - 150) * 0.3
     elif glucose_impact == 'high':
@@ -237,7 +237,7 @@ def get_food_impact_prediction(food_name, user_patterns, language='en'):
         prediction['estimated_spike'] = 30 + (user_avg - 150) * 0.1
     elif glucose_impact == 'low':
         prediction['estimated_spike'] = 15
-    else:  # none
+    else:  
         prediction['estimated_spike'] = 0
     
     return prediction

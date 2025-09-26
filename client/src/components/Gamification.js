@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Gamification() {
+
   const { token } = useAuth();
   const { language } = useLanguage();
   const [progress, setProgress] = useState(null);
