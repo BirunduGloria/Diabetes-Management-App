@@ -1,9 +1,3 @@
- development
-import React from 'react';
-export default function Medications() {
-  return <div>Medications Page</div>;
-}
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
@@ -191,4 +185,4 @@ export default function Medications() {
     </div>
   );
 }
-main
+

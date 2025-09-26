@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
- development
+ 
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 
-  main
 import { useLanguage } from './LanguageContext';
 
 export default function Dashboard() {
@@ -12,7 +11,6 @@ export default function Dashboard() {
   const [bmi, setBmi] = useState(null);
   const [bmiError, setBmiError] = useState(null);
   const [doctor, setDoctor] = useState(null);
- development
   const [dashboard, setDashboard] = useState(null);
   const [dashError, setDashError] = useState(null);
   const [bmiHistory, setBmiHistory] = useState([]);
@@ -34,7 +32,6 @@ export default function Dashboard() {
   });
 
   const { t } = useLanguage();
- main
 
   useEffect(() => {
     async function loadBMI() {
@@ -127,7 +124,6 @@ export default function Dashboard() {
     <div>
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
         <div className="crumb">
-development
           <span>{language === 'sw' ? 'Nyumbani' : 'Home'}</span>
           <span className="sep">›</span>
           <b>{language === 'sw' ? 'Dashibodi' : 'Dashboard'}</b>
@@ -135,7 +131,6 @@ development
           <span>{t('home')}</span>
           <span className="sep">›</span>
           <b>{t('dashboard')}</b>
- main
         </div>
         <div className="accent-line" />
       </div>
@@ -155,7 +150,6 @@ development
       <section className="card section">
         <h3 style={{ marginTop: 0 }}>{t('welcome')}, {user.name}</h3>
         <div className="grid-2">
- development
           <div><strong>Email:</strong> {user.email}</div>
           <div><strong>Diabetes Type:</strong> {user.diabetes_type || 'Not set'}</div>
           <div>
@@ -172,7 +166,6 @@ development
           <div><strong>{t('diabetesTypeLabel')}:</strong> {user.diabetes_type || t('notSet')}</div>
           <div><strong>{t('doctorLabel')}:</strong> {doctor ? `${doctor.name} (${doctor.email})` : t('notAssigned')}</div>
           <div><strong>{t('statusLabel')}:</strong> <span style={{ color: 'var(--cyan)' }}>{t('activePatient')}</span></div>
- main
         </div>
         <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {doctor ? (
@@ -425,7 +418,6 @@ development
       </section>
 
       <section className="card">
-development
         <h3 style={{ marginTop: 0 }}>{language === 'sw' ? 'Maarifa ya Kielimu' : 'Educational Insights'}</h3>
         {dashboard?.insights && dashboard.insights.length > 0 ? (
           <ul>
@@ -435,9 +427,8 @@ development
           </ul>
         ) : education && education.length > 0 ? (
 
-        <h3 style={{ marginTop: 0 }}>{t('educationalInsights')}</h3>
-        {education && education.length > 0 ? (
- main
+        // <h3 style={{ marginTop: 0 }}>{t('educationalInsights')}</h3>
+        // {education && education.length > 0 ? (
           <ul>
             {education.map((tip, i) => (
               <li key={i}>{tip}</li>

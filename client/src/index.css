@@ -16,7 +16,7 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
- development
+
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   /* Global background image across the whole app */
   background-color: var(--black);
@@ -32,15 +32,16 @@ body {
   background: radial-gradient(1200px 800px at 20% -10%, var(--cyan-10), transparent),
               radial-gradient(1200px 800px at 120% 20%, var(--cyan-20), transparent),
               var(--black);
- main
+
   color: var(--text);
 }
 
 /* Layout */
 .container {
+  background-image: url("./assets/background.jpeg");
   max-width: 980px;
   margin: 24px auto;
-  padding: 0 16px;
+  padding: 8px 16px;
 }
 
 /* Navbar */

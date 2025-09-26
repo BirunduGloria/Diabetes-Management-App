@@ -29,10 +29,10 @@ const ProfileSchema = Yup.object({
 export default function Profile() {
   const { token, user, setUser, setEducation, setAdvice } = useAuth();
   const [doctors, setDoctors] = useState([]);
- development
+
   const history = useHistory();
 
- main
+ 
 
   useEffect(() => {
     async function loadDoctors() {
@@ -46,10 +46,10 @@ export default function Profile() {
     loadDoctors();
   }, []);
 
- development
+
 
   // Render nothing until user info is available
-main
+
   if (!user) return null;
 
   async function handleSubmit(values, { setSubmitting, setStatus }) {
@@ -122,7 +122,7 @@ main
       <div className="card">
         <h2 style={{ marginTop: 0 }}>Profile</h2>
         <Formik
- development
+ 
           initialValues={{
             diabetes_type: user.diabetes_type || '',
             height_cm: user.height_cm ?? '',
@@ -202,7 +202,7 @@ main
             </Form>
           )}
         </Formik>
-
+{/* 
         initialValues={{
           diabetes_type: user.diabetes_type || '',
           height_cm: user.height_cm ?? '',
@@ -246,8 +246,8 @@ main
             </div>
           </Form>
         )}
-      </Formik>
- main
+      </Formik> */}
+
       </div>
     </div>
   );

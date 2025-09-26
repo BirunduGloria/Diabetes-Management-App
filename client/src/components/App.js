@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-d
 import { AuthProvider, useAuth } from "./AuthContext";
 import { LanguageProvider } from "./LanguageContext";
 import NavBar from "./NavBar";
-import Login from "./login";
+import Login from "./Login";
 import Signup from "./Signup";
 import Dashboard from "./Dashboard";
 import Profile from "./profile";
@@ -13,7 +13,6 @@ import FoodInsights from "./FoodInsights";
 import SmartAlerts from "./Smartalert";
 import Gamification from "./Gamification";
 import Education from "./education";
- development
 import Reminders from "./Reminders";
 import DoctorMessages from "./DoctorMessages";
 import Home from "./Home";
@@ -22,7 +21,6 @@ import ForgotPassword from "./ForgotPassword";
 
 import Onboarding from "./Onboarding";
 import Landing from "./Landing";
- main
 
 function PrivateRoute({ children, ...rest }) {
   const { isAuthed } = useAuth();
@@ -48,7 +46,7 @@ function App() {
           <NavBar />
           <div className="container">
             <Switch>
-              <Route path="/login">
+              <Route path="/Login">
                 <Login />
               </Route>
               <Route path="/forgot-password">
@@ -99,13 +97,12 @@ function App() {
                 <DoctorMessages />
               </PrivateRoute>
               <Route exact path="/">
- development
                 <Home />
                 <Landing />
               </Route>
               <Route path="*">
                 <Redirect to="/" />
- main
+
               </Route>
             </Switch>
           </div>

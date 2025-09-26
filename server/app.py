@@ -10,12 +10,11 @@ from datetime import datetime
 
 # Local imports
 from config import app, db, api
- development
 from models import User, Reading, Medication, Meal, Doctor, reading_meals, Reminder, EducationalTip, DoctorMessage, BMISnapshot
-from schemas import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
+from schema import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
 from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
-from glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
-from gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
+from Glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
+from Gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
 from educational_insights import get_personalized_insights, get_food_recommendations_by_status, get_glucose_trend
 
 from models import User, Reading, Medication, Meal, Doctor, reading_meals
@@ -23,7 +22,7 @@ from schema import UserSchema, ReadingSchema, MedicationSchema, MealSchema, Doct
 from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
 from Glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
 from Gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
- main
+from educational_insights import get_personalized_insights, get_food_recommendations_by_status, get_glucose_trend
 
 # ---------------- Basic route ----------------
 @app.route('/')

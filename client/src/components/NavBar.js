@@ -57,7 +57,7 @@ export default function NavBar() {
       <NavLink exact to="/" activeClassName="active">{t('home')}</NavLink>
       {!isAuthed && <NavLink to="/login" activeClassName="active">{t('login')}</NavLink>}
       {!isAuthed && <NavLink to="/signup" activeClassName="active">{t('signup')}</NavLink>}
- development
+ 
 
       {isAuthed && (
         <>
@@ -82,14 +82,14 @@ export default function NavBar() {
         </>
       )}
 
-      {isAuthed && <NavLink to="/dashboard" activeClassName="active">{t('dashboard')}</NavLink>}
+      {/* {isAuthed && <NavLink to="/dashboard" activeClassName="active">{t('dashboard')}</NavLink>}
       {isAuthed && <NavLink to="/readings" activeClassName="active">{t('readings')}</NavLink>}
       {isAuthed && <NavLink to="/food-insights" activeClassName="active">{t('foodInsights')}</NavLink>}
       {isAuthed && <NavLink to="/smart-alerts" activeClassName="active">{t('smartAlerts')}</NavLink>}
       {isAuthed && <NavLink to="/gamification" activeClassName="active">{t('progress')}</NavLink>}
       {isAuthed && <NavLink to="/education" activeClassName="active">{t('education')}</NavLink>}
-      {isAuthed && <NavLink to="/profile" activeClassName="active">{t('profile')}</NavLink>}
- main
+      {isAuthed && <NavLink to="/profile" activeClassName="active">{t('profile')}</NavLink>} */}
+
       <div className="spacer" />
       <button 
         onClick={toggleLanguage} 

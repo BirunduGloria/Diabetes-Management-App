@@ -2,11 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-development
+
 import { useHistory } from 'react-router-dom';
 import OnboardingStepper from './OnboardingStepper';
 import { useLanguage } from './LanguageContext';
- main
+
 
 const ReadingSchema = Yup.object({
   value: Yup.number().min(40).max(500).required('Required'),
@@ -51,13 +51,13 @@ export default function Readings() {
   const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
- development
+ 
   const [setReminder, setSetReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('08:00');
   const history = useHistory();
 
   const { t } = useLanguage();
-main
+
 
   const fetchReadings = useCallback(async () => {
     try {
@@ -190,7 +190,7 @@ main
               </Field>
               <div className="error"><ErrorMessage name="context" /></div>
 
- development
+ 
               <label>Notes (optional)</label>
           <Field name="notes" as="textarea" rows={2} />
 
@@ -214,15 +214,8 @@ main
           </div>
         </Form>
       )}
-
-              <label>{t('notes')} ({t('optional')})</label>
-              <Field name="notes" as="textarea" rows={2} />
-
-              {status && <div className="error">{status}</div>}
-              <button className="btn" type="submit" disabled={isSubmitting}>{t('addReading')}</button>
-            </Form>
-          )}
- main
+{/* / */}
+ 
         </Formik>
       </div>
 

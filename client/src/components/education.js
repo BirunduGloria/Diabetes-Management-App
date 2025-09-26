@@ -1,13 +1,12 @@
-development
+
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from './LanguageContext';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import OnboardingStepper from './OnboardingStepper';
 
-import React, { useState } from 'react';
-import { useLanguage } from './LanguageContext';
- main
+
+
 
 export default function Education() {
   const { language } = useLanguage();
