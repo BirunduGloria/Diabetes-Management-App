@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from './LanguageContext';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import OnboardingStepper from './OnboardingStepper';
