@@ -39,6 +39,21 @@ export default function NavBar() {
 
   return (
     <nav className="navbar">
+      <NavLink exact to="/" className="brand" title="D-TRACK">
+        {/* SVG logo mark */}
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#2FF3E0" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#grad)" />
+          <path d="M12 8h5.5c4 0 6.5 2.5 6.5 6s-2.5 6-6.5 6H12V8zm4.9 9.8c2.5 0 3.9-1.4 3.9-3.8s-1.4-3.8-3.9-3.8H15v7.6h1.9z" fill="#0a0a0a"/>
+        </svg>
+        <span className="sr-only">D-TRACK</span>
+        <span className="brand-text">D-TRACK</span>
+      </NavLink>
       <NavLink exact to="/" activeClassName="active">{t('home')}</NavLink>
       {!isAuthed && <NavLink to="/login" activeClassName="active">{t('login')}</NavLink>}
       {!isAuthed && <NavLink to="/signup" activeClassName="active">{t('signup')}</NavLink>}
