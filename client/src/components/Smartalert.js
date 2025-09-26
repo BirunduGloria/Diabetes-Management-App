@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -11,11 +11,7 @@ export default function SmartAlerts() {
   const [selectedFood, setSelectedFood] = useState('');
   const [foodPrediction, setFoodPrediction] = useState(null);
 
-  useEffect(() => {
-    loadAlerts();
-  }, [language]);
-
-  async function loadAlerts() {
+  const loadAlerts = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/glucose-alerts?lang=${language}`, {
@@ -31,7 +27,11 @@ export default function SmartAlerts() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [language, token]);
+
+  useEffect(() => {
+    loadAlerts();
+  }, [loadAlerts]);
 
   async function predictFoodImpact() {
     if (!selectedFood) return;
