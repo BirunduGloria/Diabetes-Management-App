@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -28,7 +29,10 @@ const ProfileSchema = Yup.object({
 export default function Profile() {
   const { token, user, setUser, setEducation, setAdvice } = useAuth();
   const [doctors, setDoctors] = useState([]);
+ development
   const history = useHistory();
+
+ main
 
   useEffect(() => {
     async function loadDoctors() {
@@ -42,6 +46,10 @@ export default function Profile() {
     loadDoctors();
   }, []);
 
+ development
+
+  // Render nothing until user info is available
+main
   if (!user) return null;
 
   async function handleSubmit(values, { setSubmitting, setStatus }) {
@@ -114,6 +122,7 @@ export default function Profile() {
       <div className="card">
         <h2 style={{ marginTop: 0 }}>Profile</h2>
         <Formik
+ development
           initialValues={{
             diabetes_type: user.diabetes_type || '',
             height_cm: user.height_cm ?? '',
@@ -193,6 +202,52 @@ export default function Profile() {
             </Form>
           )}
         </Formik>
+
+        initialValues={{
+          diabetes_type: user.diabetes_type || '',
+          height_cm: user.height_cm ?? '',
+          weight_kg: user.weight_kg ?? '',
+          doctor_id: user.doctor_id ?? '',
+        }}
+        validationSchema={ProfileSchema}
+        onSubmit={handleSubmit}
+        enableReinitialize
+      >
+        {({ isSubmitting, status }) => (
+          <Form className="space-y">
+            <label>Diabetes Type</label>
+            <Field as="select" name="diabetes_type">
+              {TYPES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </Field>
+            <div className="error"><ErrorMessage name="diabetes_type" /></div>
+
+            <label>Doctor</label>
+            <Field as="select" name="doctor_id">
+              <option value="">Unassigned</option>
+              {doctors.map(d => (
+                <option key={d.id} value={d.id}>{d.name} ({d.email})</option>
+              ))}
+            </Field>
+
+            <label>Height (cm)</label>
+            <Field name="height_cm" type="number" step="0.1" />
+            <div className="error"><ErrorMessage name="height_cm" /></div>
+
+            <label>Weight (kg)</label>
+            <Field name="weight_kg" type="number" step="0.1" />
+            <div className="error"><ErrorMessage name="weight_kg" /></div>
+
+            {status && <div className={status === 'Saved!' ? 'success' : 'error'}>{status}</div>}
+            <button className="btn" type="submit" disabled={isSubmitting}>Save</button>
+            <div style={{ marginTop: 12 }}>
+              <Link className="btn btn-outline" to="/dashboard">Go to Dashboard</Link>
+            </div>
+          </Form>
+        )}
+      </Formik>
+ main
       </div>
     </div>
   );

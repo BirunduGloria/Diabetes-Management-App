@@ -9,6 +9,7 @@ export default function FoodInsights() {
   const [recommendations, setRecommendations] = useState(null);
   const [selectedFood, setSelectedFood] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     loadData();
@@ -50,6 +51,18 @@ export default function FoodInsights() {
     }
   };
 
+  // Derived: filtered food entries (stable ordering by name)
+  const filteredEntries = Object.entries(foods)
+    .filter(([_, f]) => {
+      const name = (f?.[`name_${language}`] || f?.name_en || '').toLowerCase();
+      return name.includes(query.trim().toLowerCase());
+    })
+    .sort((a, b) => {
+      const an = (a[1]?.[`name_${language}`] || a[1]?.name_en || '').toLowerCase();
+      const bn = (b[1]?.[`name_${language}`] || b[1]?.name_en || '').toLowerCase();
+      return an.localeCompare(bn);
+    });
+
   const getGlucoseImpactText = (impact) => {
     const impacts = {
       none: { en: 'No Impact', sw: 'Hakuna Athari' },
@@ -59,6 +72,17 @@ export default function FoodInsights() {
       very_high: { en: 'Very High Impact', sw: 'Athari Kubwa Sana' }
     };
     return impacts[impact]?.[language] || impact;
+  };
+
+  const getImpactClass = (impact) => {
+    switch (impact) {
+      case 'none': return 'impact-chip impact-none';
+      case 'low': return 'impact-chip impact-low';
+      case 'medium': return 'impact-chip impact-medium';
+      case 'high': return 'impact-chip impact-high';
+      case 'very_high': return 'impact-chip impact-very_high';
+      default: return 'impact-chip';
+    }
   };
 
   if (loading) {
@@ -75,7 +99,7 @@ export default function FoodInsights() {
         <div className="crumb">
           <span>{t('home')}</span>
           <span className="sep">›</span>
-          <b>Food Insights</b>
+          <b>{t('foodInsights')}</b>
         </div>
         <div className="accent-line" />
       </div>
@@ -83,15 +107,17 @@ export default function FoodInsights() {
       {/* Personalized Recommendations */}
       {recommendations && (
         <div className="card section">
-          <h3 style={{ marginTop: 0 }}>
-            {language === 'sw' ? 'Mapendekezo ya Kibinafsi' : 'Personalized Food Recommendations'}
-          </h3>
-          <p>
-            <strong>{language === 'sw' ? 'Aina ya Kisukari' : 'Diabetes Type'}:</strong> {recommendations.diabetes_type}
-          </p>
-          <ul>
+          <div className="section-header">
+            <h3>
+              {language === 'sw' ? 'Mapendekezo ya Kibinafsi' : 'Personalized Food Recommendations'}
+            </h3>
+            <p className="section-subtle">
+              <strong>{language === 'sw' ? 'Aina ya Kisukari' : 'Diabetes Type'}:</strong> {recommendations.diabetes_type}
+            </p>
+          </div>
+          <ul className="list">
             {recommendations.recommendations.map((rec, i) => (
-              <li key={i}>{rec}</li>
+              <li key={i} className="list-item">{rec}</li>
             ))}
           </ul>
         </div>
@@ -101,19 +127,18 @@ export default function FoodInsights() {
       <div className="grid-2" style={{ gap: 16, marginBottom: 16 }}>
         {/* Diabetes-Friendly Foods */}
         <div className="card">
-          <h3 style={{ marginTop: 0, color: '#34d399' }}>
+          <h3 style={{ marginTop: 0 }}>
             {language === 'sw' ? 'Vyakula Rafiki kwa Kisukari' : 'Diabetes-Friendly Foods'}
           </h3>
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div className="pill-list">
             {recommendations?.diabetes_friendly?.map(foodKey => {
               const food = foods[foodKey];
               if (!food) return null;
               return (
                 <button
                   key={foodKey}
-                  className="btn btn-outline"
+                  className="pill"
                   onClick={() => setSelectedFood(food)}
-                  style={{ textAlign: 'left', justifyContent: 'flex-start' }}
                 >
                   {food[`name_${language}`] || food.name_en}
                 </button>
@@ -124,19 +149,18 @@ export default function FoodInsights() {
 
         {/* Foods to Limit */}
         <div className="card">
-          <h3 style={{ marginTop: 0, color: '#f87171' }}>
+          <h3 style={{ marginTop: 0 }}>
             {language === 'sw' ? 'Vyakula vya Kujizuia' : 'Foods to Limit'}
           </h3>
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div className="pill-list">
             {recommendations?.foods_to_limit?.map(foodKey => {
               const food = foods[foodKey];
               if (!food) return null;
               return (
                 <button
                   key={foodKey}
-                  className="btn btn-outline"
+                  className="pill"
                   onClick={() => setSelectedFood(food)}
-                  style={{ textAlign: 'left', justifyContent: 'flex-start' }}
                 >
                   {food[`name_${language}`] || food.name_en}
                 </button>
@@ -146,37 +170,67 @@ export default function FoodInsights() {
         </div>
       </div>
 
-      {/* All Foods Grid */}
+      {/* Search + Table */}
       <div className="card section">
         <h3 style={{ marginTop: 0 }}>
-          {language === 'sw' ? 'Vyakula vya Kikenya' : 'Kenyan Foods Database'}
+          {language === 'sw' ? 'Hifadhidata ya Vyakula vya Kenya' : 'Kenyan Food Database'}
         </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-          {Object.entries(foods).map(([key, food]) => (
+        {/* Search Bar */}
+        <div style={{ position: 'relative', margin: '8px 0 14px' }}>
+          <span style={{ position: 'absolute', top: 10, left: 12, color: 'var(--muted)' }} aria-hidden>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="M21 21l-3.6-3.6"/>
+            </svg>
+          </span>
+          <input
+            className="input"
+            placeholder={language === 'sw' ? 'Tafuta vyakula vya Kenya' : 'Search for Kenyan foods'}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ paddingLeft: 38 }}
+          />
+        </div>
+
+        {/* Table-like list */}
+        <div style={{ border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '2fr 1.2fr 1fr 1.2fr',
+            gap: 0,
+            background: '#0f1212',
+            borderBottom: '1px solid var(--border)',
+            padding: '10px 12px',
+            color: 'var(--muted)'
+          }}>
+            <div>{language === 'sw' ? 'Chakula' : 'Food'}</div>
+            <div>{language === 'sw' ? 'Kiasi' : 'Serving Size'}</div>
+            <div>{language === 'sw' ? 'Kabohaidreti (g)' : 'Carbs (g)'}</div>
+            <div>{language === 'sw' ? 'Kiwango cha Athari' : 'Impact Level'}</div>
+          </div>
+
+          {filteredEntries.map(([key, food], idx) => (
             <div
               key={key}
-              className="list-item"
-              style={{
-                cursor: 'pointer',
-                borderLeft: `4px solid ${getGlucoseImpactColor(food.glucose_impact)}`
-              }}
               onClick={() => setSelectedFood(food)}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1.2fr 1fr 1.2fr',
+                gap: 0,
+                alignItems: 'center',
+                padding: '12px',
+                borderBottom: idx === filteredEntries.length - 1 ? 'none' : '1px solid var(--border)',
+                cursor: 'pointer',
+                background: 'transparent'
+              }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong>{food[`name_${language}`] || food.name_en}</strong>
-                <span
-                  className="badge"
-                  style={{
-                    backgroundColor: getGlucoseImpactColor(food.glucose_impact),
-                    color: food.glucose_impact === 'none' || food.glucose_impact === 'low' ? '#000' : '#fff',
-                    fontSize: '0.7rem'
-                  }}
-                >
-                  {getGlucoseImpactText(food.glucose_impact)}
+              <div style={{ fontWeight: 600 }}>{food?.[`name_${language}`] || food?.name_en}</div>
+              <div style={{ color: 'var(--muted)' }}>{food?.serving_size || '—'}</div>
+              <div style={{ color: 'var(--text)' }}>{food?.carbs ?? '—'}</div>
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <span className={getImpactClass(food?.glucose_impact)}>
+                  {getGlucoseImpactText(food?.glucose_impact)}
                 </span>
-              </div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: 4 }}>
-                {food.calories} cal | {food.carbs}g carbs | GI: {food.glycemic_index}
               </div>
             </div>
           ))}
@@ -185,41 +239,17 @@ export default function FoodInsights() {
 
       {/* Food Detail Modal */}
       {selectedFood && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: 16
-          }}
-          onClick={() => setSelectedFood(null)}
-        >
-          <div
-            className="card"
-            style={{ maxWidth: 500, maxHeight: '80vh', overflow: 'auto' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div className="modal-overlay" onClick={() => setSelectedFood(null)}>
+          <div className="card modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <h3 style={{ margin: 0 }}>
                 {selectedFood[`name_${language}`] || selectedFood.name_en}
               </h3>
-              <button
-                onClick={() => setSelectedFood(null)}
-                style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text)' }}
-              >
-                ×
-              </button>
+              <button className="modal-close" onClick={() => setSelectedFood(null)} aria-label="Close">×</button>
             </div>
 
             {/* Nutritional Info */}
-            <div className="grid-2" style={{ gap: 12, marginBottom: 16 }}>
+            <div className="kv-grid" style={{ marginBottom: 4 }}>
               <div><strong>{language === 'sw' ? 'Kalori' : 'Calories'}:</strong> {selectedFood.calories}</div>
               <div><strong>{language === 'sw' ? 'Kabohaidreti' : 'Carbs'}:</strong> {selectedFood.carbs}g</div>
               <div><strong>{language === 'sw' ? 'Nyuzi' : 'Fiber'}:</strong> {selectedFood.fiber}g</div>
@@ -229,18 +259,9 @@ export default function FoodInsights() {
             </div>
 
             {/* Glucose Impact */}
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ margin: '8px 0 12px' }}>
               <strong>{language === 'sw' ? 'Athari ya Sukari ya Damu' : 'Blood Sugar Impact'}:</strong>
-              <span
-                style={{
-                  marginLeft: 8,
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  backgroundColor: getGlucoseImpactColor(selectedFood.glucose_impact),
-                  color: selectedFood.glucose_impact === 'none' || selectedFood.glucose_impact === 'low' ? '#000' : '#fff',
-                  fontSize: '0.8rem'
-                }}
-              >
+              <span className={getImpactClass(selectedFood.glucose_impact)} style={{ marginLeft: 8 }}>
                 {getGlucoseImpactText(selectedFood.glucose_impact)}
               </span>
             </div>

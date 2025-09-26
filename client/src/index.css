@@ -16,6 +16,7 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
+ development
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   /* Global background image across the whole app */
   background-color: var(--black);
@@ -26,6 +27,12 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', Times, serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 800px at 20% -10%, var(--cyan-10), transparent),
+              radial-gradient(1200px 800px at 120% 20%, var(--cyan-20), transparent),
+              var(--black);
+ main
   color: var(--text);
 }
 
@@ -46,6 +53,7 @@ body {
   align-items: center;
   padding: 12px 16px;
   background: rgba(10,10,10,0.7);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--border);
 }
@@ -247,6 +255,92 @@ input:focus, select:focus, textarea:focus {
   --bg: #282c34;
   --header: #fff;
   --link: #61dafb;
-  --text: hsla(0, 0%, 100%, 0.88);
 }
 
+.fade-step { animation: fadeIn 260ms ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+
+  .input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--text); }
+  .input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,0.2); }
+
+  /* Safari support for backdrop blur if used elsewhere */
+  .backdrop-blur { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+
+  /* ---------------- Landing page ---------------- */
+  .text-center { text-align: center; }
+  .muted { color: var(--muted); }
+
+  /* Hero */
+  .landing .hero { position: relative; overflow: hidden; padding: 0; border-radius: 16px; }
+  .landing .hero-media { position: relative; height: 320px; }
+  .landing .hero-media img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(0.9) contrast(1.05) brightness(0.9); }
+  .landing .hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.55)); border-bottom: 6px solid var(--cyan); opacity: 0.95; }
+  .landing .hero-content { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 24px; }
+  .landing .hero-title { font-size: clamp(28px, 5vw, 42px); line-height: 1.1; margin: 0; font-weight: 800; }
+  .landing .hero-sub { max-width: 720px; color: var(--muted); font-size: 1.02rem; }
+  .landing .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Section headings */
+  .section-title { font-size: clamp(22px, 3.5vw, 30px); margin: 6px 0; }
+  .section-sub { color: var(--muted); max-width: 720px; margin: 0 auto; }
+
+  /* Features grid */
+  .features-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0,1fr)); }
+  @media (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 640px) { .features-grid { grid-template-columns: 1fr; } }
+  .feature { display: flex; gap: 12px; align-items: flex-start; }
+  .feature-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: rgba(47,243,224,0.1); border: 1px solid var(--cyan); font-size: 18px; }
+  .feature-title { margin: 2px 0 6px; font-size: 1.05rem; }
+  .feature-desc { margin: 0; color: var(--muted); }
+
+  /* Designed for You cards */
+  .designed-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+  @media (max-width: 1024px) { .designed-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 640px) { .designed-grid { grid-template-columns: 1fr; } }
+  .designed-media { overflow: hidden; border-radius: 10px; }
+  .designed-media img { width: 100%; height: 160px; object-fit: cover; display: block; }
+  .designed-body h4 { margin: 10px 0 6px; }
+  .designed-body p { margin: 0; color: var(--muted); }
+
+  /* CTA */
+  .cta { padding: 28px; }
+
+  /* Footer */
+  .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0 28px; border-top: 1px solid var(--border); }
+  .footer-links { display: flex; gap: 14px; flex-wrap: wrap; }
+  .footer-links a { color: var(--muted); text-decoration: none; }
+  .footer-links a:hover { color: var(--black); background: var(--cyan); padding: 4px 8px; border-radius: 8px; }
+
+  /* ---------------- Food Insights UI ---------------- */
+  /* Section headers */
+  .section-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 10px; }
+  .section-header h3 { margin: 0; font-size: 1.1rem; letter-spacing: 0.2px; }
+  .section-subtle { color: var(--muted); font-size: 0.95rem; margin: 0; }
+
+  /* Pill tabs (for quick categories) */
+  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: #0f1212; color: var(--text); cursor: pointer; transition: background 200ms ease, border-color 200ms ease, transform 120ms ease; }
+  .pill:hover { background: rgba(255,255,255,0.04); border-color: var(--border); transform: translateY(-1px); }
+
+  /* Food grid/cards */
+  .food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .food-card { border: 1px solid var(--border); border-radius: 14px; background: #0f1212; padding: 12px; transition: transform 140ms ease, box-shadow 220ms ease, border-color 200ms ease; position: relative; overflow: hidden; }
+  .food-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); border-color: rgba(47,243,224,0.35); }
+  .food-card-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .food-card-meta { font-size: 0.92rem; color: var(--muted); margin-top: 6px; }
+
+  /* Impact chips */
+  .impact-chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; line-height: 1; border: 1px solid transparent; }
+  .impact-none, .impact-low { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+  .impact-medium { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+  .impact-high { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+  .impact-very_high { background: #2a2d2d; color: #e5e7eb; border-color: #3a3f3f; }
+
+  /* Modal styles */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+  .modal { max-width: 520px; max-height: 80vh; overflow: auto; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .modal-close { background: transparent; border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px; display: grid; place-items: center; transition: background 200ms ease, border-color 200ms ease, transform 120ms ease; }
+  .modal-close:hover { background: rgba(47,243,224,0.08); border-color: var(--cyan); transform: translateY(-1px); }
+  .kv-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  @media (max-width: 720px) { .kv-grid { grid-template-columns: 1fr; } }

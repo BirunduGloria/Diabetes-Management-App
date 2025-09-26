@@ -66,12 +66,26 @@ export default function SmartAlerts() {
     }
   };
 
+  // Sharp inline SVG icons for severity
   const getSeverityIcon = (severity) => {
+    const commonProps = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
     switch (severity) {
-      case 'high': return '⚠️';
-      case 'medium': return '⚡';
-      case 'low': return 'ℹ️';
-      default: return '📊';
+      case 'high':
+        return (
+          <svg {...commonProps}><path d="M12 2l9 18H3L12 2Z"/><path d="M12 8v5"/><path d="M12 18h.01"/></svg>
+        );
+      case 'medium':
+        return (
+          <svg {...commonProps}><path d="M4 12h8"/><path d="M12 12l4-4"/><path d="M12 12l4 4"/><circle cx="12" cy="12" r="9"/></svg>
+        );
+      case 'low':
+        return (
+          <svg {...commonProps}><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        );
+      default:
+        return (
+          <svg {...commonProps}><path d="M3 3v18h18"/><path d="M7 15l3-3 3 3 4-5"/></svg>
+        );
     }
   };
 
@@ -221,7 +235,12 @@ export default function SmartAlerts() {
         
         {alerts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 32, color: 'var(--muted)' }}>
-            <div style={{ fontSize: '2rem', marginBottom: 16 }}>🎉</div>
+            <div style={{ marginBottom: 16, display: 'inline-block', color: 'var(--cyan)' }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M20 7l-9 9-4-4"/>
+                <path d="M21 12a9 9 0 1 1-9-9"/>
+              </svg>
+            </div>
             <p>
               {language === 'sw' ? 
                 'Hongera! Hakuna tahadhari za haraka. Endelea na kazi nzuri!' :
@@ -241,7 +260,7 @@ export default function SmartAlerts() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                  <span style={{ fontSize: '1.5rem' }}>
+                  <span style={{ display: 'grid', placeItems: 'center', color: getSeverityColor(alert.severity) }}>
                     {getSeverityIcon(alert.severity)}
                   </span>
                   <h4 style={{ margin: 0, color: getSeverityColor(alert.severity) }}>

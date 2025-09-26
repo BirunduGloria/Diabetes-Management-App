@@ -1,44 +1,35 @@
 import React from 'react';
 import { useHistory, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
-const SignupSchema = Yup.object({
-  name: Yup.string().min(2, 'Too short').required('Required'),
+const API_URL = process.env.REACT_APP_API_URL || '';
+const LoginSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Required'),
   password: Yup.string().min(6, 'Min 6 characters').required('Required'),
 });
 
-export default function Signup() {
+export default function Login() {
   const history = useHistory();
-  const { setToken, setUser, setEducation, setAdvice, logout } = useAuth();
-
-  // Ensure any existing session is terminated when starting a new signup
-  useEffect(() => {
-    logout();
-    // Clear onboarding so the new user will follow the intended flow
-    localStorage.removeItem('onboarding_complete');
-  }, []);
+  const { setToken, setUser, setEducation, setAdvice } = useAuth();
 
   async function handleSubmit(values, { setSubmitting, setStatus }) {
     setStatus(null);
     try {
-      const res = await fetch('/signup', {
+      const res = await fetch(API_URL+'/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Signup failed');
+      if (!res.ok) throw new Error(data.error || 'Login failed');
       setToken(data.access_token);
       setUser(data.user);
       setEducation(data.education || []);
       setAdvice(data.advice || { nutrition: [], exercise: [], medication: [], bmi_category: null });
-      // After account creation, direct the user to complete their profile
-      localStorage.removeItem('onboarding_complete');
-      history.push('/profile');
+      const done = localStorage.getItem('onboarding_complete') === 'true';
+      history.push(done ? '/dashboard' : '/onboarding');
     } catch (e) {
       setStatus(e.message);
     } finally {
@@ -52,24 +43,20 @@ export default function Signup() {
         <div className="crumb">
           <span>Home</span>
           <span className="sep">›</span>
-          <b>Signup</b>
+          <b>Login</b>
         </div>
         <div className="accent-line" />
       </div>
 
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>Signup</h2>
+        <h2 style={{ marginTop: 0 }}>Login</h2>
         <Formik
-        initialValues={{ name: '', email: '', password: '' }}
-        validationSchema={SignupSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isSubmitting, status }) => (
+          initialValues={{ email: '', password: '' }}
+          validationSchema={LoginSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting, status }) => (
           <Form className="space-y">
-            <label>Name</label>
-            <Field name="name" />
-            <div className="error"><ErrorMessage name="name" /></div>
-
             <label>Email</label>
             <Field name="email" type="email" />
             <div className="error"><ErrorMessage name="email" /></div>
@@ -78,18 +65,16 @@ export default function Signup() {
             <Field name="password" type="password" />
             <div className="error"><ErrorMessage name="password" /></div>
 
-            {/* Simplified signup: only basic account fields */}
-
             {status && <div className="error">{status}</div>}
-            <button className="btn" type="submit" disabled={isSubmitting}>Create Account</button>
+            <button className="btn" type="submit" disabled={isSubmitting}>Login</button>
 
             <div>
-              Already have an account? <Link to="/login">Login</Link>
+              No account? <Link to="/signup">Create one</Link>
             </div>
           </Form>
-        )}
-      </Formik>
+          )}
+        </Formik>
       </div>
     </div>
   );
-}
+} 

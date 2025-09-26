@@ -38,6 +38,42 @@ export default function Gamification() {
     return <div className="card">Loading...</div>;
   }
 
+  const common = { width: 28, height: 28, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
+
+  const Icons = {
+    streak: (
+      <svg {...common}>
+        <path d="M12 2c2 3 2 5.5 0 7.5S9 13 9 15.5 10.5 22 12 22s3-2.5 3-6.5S10 9 12 2Z"/>
+      </svg>
+    ),
+    readings: (
+      <svg {...common}>
+        <path d="M3 3v18h18"/>
+        <path d="M7 15l3-3 3 3 4-5"/>
+      </svg>
+    ),
+    star: (
+      <svg {...common}><path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z"/></svg>
+    ),
+    medal: (
+      <svg {...common}><circle cx="12" cy="13" r="4"/><path d="M8 2h8l-2 4h-4L8 2z"/></svg>
+    ),
+  };
+
+  function renderIcon(token) {
+    switch (token) {
+      case '🔥':
+        return Icons.streak;
+      case '📊':
+        return Icons.readings;
+      case '🏆':
+      case '⭐':
+        return Icons.star;
+      default:
+        return Icons.medal;
+    }
+  }
+
   return (
     <div>
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
@@ -56,12 +92,12 @@ export default function Gamification() {
         </h3>
         <div className="grid-2" style={{ gap: 16 }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem' }}>🔥</div>
+            <div style={{ display: 'grid', placeItems: 'center', color: 'var(--cyan)' }}>{Icons.streak}</div>
             <div style={{ fontWeight: 'bold' }}>{progress?.current_streak}</div>
             <div>{language === 'sw' ? 'Siku mfululizo' : 'Day Streak'}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem' }}>📊</div>
+            <div style={{ display: 'grid', placeItems: 'center', color: 'var(--cyan)' }}>{Icons.readings}</div>
             <div style={{ fontWeight: 'bold' }}>{progress?.total_readings}</div>
             <div>{language === 'sw' ? 'Jumla ya Vipimo' : 'Total Readings'}</div>
           </div>
@@ -78,7 +114,7 @@ export default function Gamification() {
             borderLeft: `4px solid ${challenge.status.completed ? '#10b981' : '#6b7280'}` 
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: '1.5rem' }}>{challenge.icon}</span>
+              <span style={{ display: 'grid', placeItems: 'center', color: 'var(--cyan)' }}>{renderIcon(challenge.icon)}</span>
               <div>
                 <strong>{challenge.name}</strong>
                 <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>
@@ -102,7 +138,7 @@ export default function Gamification() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
             {badges.map(badge => (
               <div key={badge.id} className="list-item" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem' }}>{badge.icon}</div>
+                <div style={{ display: 'grid', placeItems: 'center', color: 'var(--cyan)' }}>{renderIcon(badge.icon)}</div>
                 <div style={{ fontWeight: 'bold' }}>{badge.name}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
                   {badge.description}

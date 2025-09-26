@@ -53,3 +53,4 @@ Content-Type: application/json
     "password": "testpassword",
     "diabetes_type": "Type 1",
 }
+

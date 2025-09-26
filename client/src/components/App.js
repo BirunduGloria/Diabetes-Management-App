@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-d
 import { AuthProvider, useAuth } from "./AuthContext";
 import { LanguageProvider } from "./LanguageContext";
 import NavBar from "./NavBar";
-import Login from "./Login";
+import Login from "./login";
 import Signup from "./Signup";
 import Dashboard from "./Dashboard";
 import Profile from "./profile";
@@ -13,11 +13,16 @@ import FoodInsights from "./FoodInsights";
 import SmartAlerts from "./Smartalert";
 import Gamification from "./Gamification";
 import Education from "./education";
+ development
 import Reminders from "./Reminders";
 import DoctorMessages from "./DoctorMessages";
 import Home from "./Home";
 import OnboardingGuard from "./OnboardingGuard";
 import ForgotPassword from "./ForgotPassword";
+
+import Onboarding from "./Onboarding";
+import Landing from "./Landing";
+ main
 
 function PrivateRoute({ children, ...rest }) {
   const { isAuthed } = useAuth();
@@ -52,6 +57,9 @@ function App() {
               <Route path="/signup">
                 <Signup />
               </Route>
+              <PrivateRoute path="/onboarding">
+                <Onboarding />
+              </PrivateRoute>
               <PrivateRoute path="/dashboard">
                 <OnboardingGuard requireProfile requireReading requireEducation>
                   <Dashboard />
@@ -91,7 +99,13 @@ function App() {
                 <DoctorMessages />
               </PrivateRoute>
               <Route exact path="/">
+ development
                 <Home />
+                <Landing />
+              </Route>
+              <Route path="*">
+                <Redirect to="/" />
+ main
               </Route>
             </Switch>
           </div>

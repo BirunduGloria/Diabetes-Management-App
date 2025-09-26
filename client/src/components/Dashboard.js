@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
+ development
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+
+  main
 import { useLanguage } from './LanguageContext';
 
 export default function Dashboard() {
@@ -9,6 +12,7 @@ export default function Dashboard() {
   const [bmi, setBmi] = useState(null);
   const [bmiError, setBmiError] = useState(null);
   const [doctor, setDoctor] = useState(null);
+ development
   const [dashboard, setDashboard] = useState(null);
   const [dashError, setDashError] = useState(null);
   const [bmiHistory, setBmiHistory] = useState([]);
@@ -28,6 +32,9 @@ export default function Dashboard() {
     const label = new Date(s.created_at).toLocaleDateString();
     return { idx, label, bmi: s.bmi };
   });
+
+  const { t } = useLanguage();
+ main
 
   useEffect(() => {
     async function loadBMI() {
@@ -114,20 +121,41 @@ export default function Dashboard() {
 
   if (!user) return <div>Loading...</div>;
 
+  const hasAnyReading = Array.isArray(education) || true; // placeholder; rely on backend if needed
+
   return (
     <div>
       <div className="crumb-wrap card" style={{ marginBottom: 16 }}>
         <div className="crumb">
+development
           <span>{language === 'sw' ? 'Nyumbani' : 'Home'}</span>
           <span className="sep">›</span>
           <b>{language === 'sw' ? 'Dashibodi' : 'Dashboard'}</b>
+
+          <span>{t('home')}</span>
+          <span className="sep">›</span>
+          <b>{t('dashboard')}</b>
+ main
         </div>
         <div className="accent-line" />
       </div>
 
+      {/* Progressive prompts */}
+      {(!user.height_cm || !user.weight_kg) && (
+        <div className="card" style={{ borderLeft: '6px solid var(--cyan)', marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <strong>{t('bmi')}</strong>
+              <div>{t('setProfileForBMI')}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="card section">
-        <h3 style={{ marginTop: 0 }}>Welcome, {user.name}</h3>
+        <h3 style={{ marginTop: 0 }}>{t('welcome')}, {user.name}</h3>
         <div className="grid-2">
+ development
           <div><strong>Email:</strong> {user.email}</div>
           <div><strong>Diabetes Type:</strong> {user.diabetes_type || 'Not set'}</div>
           <div>
@@ -139,6 +167,12 @@ export default function Dashboard() {
             )}
           </div>
           <div><strong>Status:</strong> <span style={{ color: 'var(--cyan)' }}>Active Patient</span></div>
+
+          <div><strong>{t('emailLabel')}:</strong> {user.email}</div>
+          <div><strong>{t('diabetesTypeLabel')}:</strong> {user.diabetes_type || t('notSet')}</div>
+          <div><strong>{t('doctorLabel')}:</strong> {doctor ? `${doctor.name} (${doctor.email})` : t('notAssigned')}</div>
+          <div><strong>{t('statusLabel')}:</strong> <span style={{ color: 'var(--cyan)' }}>{t('activePatient')}</span></div>
+ main
         </div>
         <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {doctor ? (
@@ -378,19 +412,20 @@ export default function Dashboard() {
       </section>
 
       <section className="card section">
-        <h3 style={{ marginTop: 0 }}>BMI</h3>
+        <h3 style={{ marginTop: 0 }}>{t('bmi')}</h3>
         {!user.height_cm || !user.weight_kg ? (
-          <p>Set your height and weight in the Profile page to see your BMI.</p>
+          <p>{t('setProfileForBMI')}</p>
         ) : bmi ? (
           <p><strong>{bmi.bmi}</strong> — {bmi.category}</p>
         ) : bmiError ? (
           <p style={{ color: 'crimson' }}>{bmiError}</p>
         ) : (
-          <p>Loading BMI...</p>
+          <p>{t('loadingBMI')}</p>
         )}
       </section>
 
       <section className="card">
+development
         <h3 style={{ marginTop: 0 }}>{language === 'sw' ? 'Maarifa ya Kielimu' : 'Educational Insights'}</h3>
         {dashboard?.insights && dashboard.insights.length > 0 ? (
           <ul>
@@ -399,6 +434,10 @@ export default function Dashboard() {
             ))}
           </ul>
         ) : education && education.length > 0 ? (
+
+        <h3 style={{ marginTop: 0 }}>{t('educationalInsights')}</h3>
+        {education && education.length > 0 ? (
+ main
           <ul>
             {education.map((tip, i) => (
               <li key={i}>{tip}</li>
@@ -422,15 +461,15 @@ export default function Dashboard() {
       )}
 
       <section className="card section">
-        <h3 style={{ marginTop: 0 }}>Personalized Advice</h3>
+        <h3 style={{ marginTop: 0 }}>{t('personalizedAdvice')}</h3>
         {advice?.bmi_category && (
           <p style={{ marginTop: 0 }}>
-            <strong>BMI Category:</strong> {advice.bmi_category}
+            <strong>{t('bmiCategory')}:</strong> {advice.bmi_category}
           </p>
         )}
         <div className="grid-2">
           <div>
-            <h4>Nutrition</h4>
+            <h4>{t('nutrition')}</h4>
             <ul>
               {(advice?.nutrition || []).map((t, i) => (
                 <li key={i}>{t}</li>
@@ -438,7 +477,7 @@ export default function Dashboard() {
             </ul>
           </div>
           <div>
-            <h4>Exercise</h4>
+            <h4>{t('exercise')}</h4>
             <ul>
               {(advice?.exercise || []).map((t, i) => (
                 <li key={i}>{t}</li>
@@ -447,7 +486,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="section">
-          <h4>Medication</h4>
+          <h4>{t('medication')}</h4>
           <ul>
             {(advice?.medication || []).map((t, i) => (
               <li key={i}>{t}</li>

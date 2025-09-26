@@ -10,12 +10,20 @@ from datetime import datetime
 
 # Local imports
 from config import app, db, api
+ development
 from models import User, Reading, Medication, Meal, Doctor, reading_meals, Reminder, EducationalTip, DoctorMessage, BMISnapshot
 from schemas import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
 from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
 from glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
 from gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
 from educational_insights import get_personalized_insights, get_food_recommendations_by_status, get_glucose_trend
+
+from models import User, Reading, Medication, Meal, Doctor, reading_meals
+from schema import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
+from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
+from Glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
+from Gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
+ main
 
 # ---------------- Basic route ----------------
 @app.route('/')
@@ -44,20 +52,58 @@ class Signup(Resource):
             user.password_hash = data['password']  # This will trigger the setter
             # Optional diabetes_type at signup
             if 'diabetes_type' in data:
-                user.diabetes_type = data['diabetes_type']
+                user.diabetes_type = data['diabetes_type'] or None
+            # Optional BMI fields at signup
+            if 'height_cm' in data and data['height_cm'] is not None and data['height_cm'] != '':
+                try:
+                    user.height_cm = float(data['height_cm'])
+                except Exception:
+                    return {'error': 'height_cm must be a number'}, 400
+            if 'weight_kg' in data and data['weight_kg'] is not None and data['weight_kg'] != '':
+                try:
+                    user.weight_kg = float(data['weight_kg'])
+                except Exception:
+                    return {'error': 'weight_kg must be a number'}, 400
             
             db.session.add(user)
             db.session.commit()
             
-            # Create access token
-            access_token = create_access_token(identity=user.id)
+            # Optionally create an initial glucose reading
+            initial_eval = None
+            if data.get('initial_reading_value') is not None and data.get('initial_reading_value') != '':
+                try:
+                    value = float(data['initial_reading_value'])
+                except Exception:
+                    return {'error': 'initial_reading_value must be a number'}, 400
+                context = data.get('initial_reading_context') or 'pre_meal'
+                if context not in ['pre_meal', 'post_meal']:
+                    return {'error': "initial_reading_context must be 'pre_meal' or 'post_meal'"}, 400
+                from datetime import date, datetime as dt
+                reading = Reading(
+                    value=value,
+                    date=date.today(),
+                    time=dt.now().time().replace(microsecond=0),
+                    notes=data.get('initial_reading_notes'),
+                    context=context,
+                    user_id=user.id,
+                )
+                db.session.add(reading)
+                db.session.commit()
+                initial_eval = evaluate_glucose(value, context)
             
-            return {
+            # Create access token
+            access_token = create_access_token(identity=str(user.id))
+            
+            # Response: include advice (uses any BMI provided) and optional initial reading evaluation
+            resp = {
                 'user': user.to_dict(),
                 'access_token': access_token,
                 'education': education_for(user.diabetes_type),
                 'advice': advice_for(user)
-            }, 201
+            }
+            if initial_eval:
+                resp['initial_evaluation'] = initial_eval
+            return resp, 201
             
         except Exception as e:
             db.session.rollback()
@@ -73,7 +119,7 @@ class Login(Resource):
         user = User.query.filter_by(email=data['email']).first()
         
         if user and user.authenticate(data['password']):
-            access_token = create_access_token(identity=user.id)
+            access_token = create_access_token(identity=str(user.id))
             return {
                 'user': user.to_dict(),
                 'access_token': access_token,
@@ -86,7 +132,7 @@ class Login(Resource):
 class CheckSession(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if user:
@@ -295,13 +341,13 @@ doctors_schema = DoctorSchema(many=True)
 class Readings(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         items = Reading.query.filter_by(user_id=user_id).order_by(Reading.date, Reading.time).all()
         return readings_schema.dump(items), 200
 
     @jwt_required()
     def post(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         required = ['value', 'date', 'time']
         if not all(k in data for k in required):
@@ -333,7 +379,7 @@ class Readings(Resource):
 class ReadingById(Resource):
     @jwt_required()
     def get(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -344,7 +390,7 @@ class ReadingById(Resource):
 
     @jwt_required()
     def patch(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -375,7 +421,7 @@ class ReadingById(Resource):
 
     @jwt_required()
     def delete(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -391,7 +437,7 @@ class ReadingById(Resource):
 class UserProfile(Resource):
     @jwt_required()
     def patch(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -426,7 +472,7 @@ class UserProfile(Resource):
 class UserBMI(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -459,13 +505,13 @@ api.add_resource(UserBMI, '/me/bmi')
 class Medications(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         meds = Medication.query.filter_by(user_id=user_id).order_by(Medication.time).all()
         return medications_schema.dump(meds), 200
 
     @jwt_required()
     def post(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         required = ['name', 'dose', 'time']
         if not all(k in data and data[k] for k in required):
@@ -488,7 +534,7 @@ class Medications(Resource):
 class MedicationById(Resource):
     @jwt_required()
     def patch(self, id):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         med = Medication.query.filter_by(id=id, user_id=user_id).first()
         if not med:
             return {'error': 'Medication not found'}, 404
@@ -518,7 +564,7 @@ api.add_resource(MedicationById, '/medications/<int:id>')
 class Meals(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         # Return only meals that are linked to this user's readings OR simple listing of all meals
         # For simplicity, we'll return all meals the user created in this app context.
         # If meals are global, you could return all.
@@ -550,7 +596,7 @@ class ReadingMeals(Resource):
     @jwt_required()
     def post(self, reading_id):
         """Attach a meal to a reading with optional carbs_amount."""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=reading_id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -577,7 +623,7 @@ class ReadingMeals(Resource):
     @jwt_required()
     def delete(self, reading_id):
         """Detach a meal from a reading."""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         reading = Reading.query.filter_by(id=reading_id, user_id=user_id).first()
         if not reading:
             return {'error': 'Reading not found'}, 404
@@ -666,7 +712,7 @@ class FoodRecommendations(Resource):
     @jwt_required()
     def get(self):
         """Get personalized food recommendations for the user"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -693,7 +739,7 @@ class GlucoseAlerts(Resource):
     @jwt_required()
     def get(self):
         """Get predictive alerts based on user's glucose patterns"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -734,7 +780,7 @@ class MealPrediction(Resource):
     @jwt_required()
     def post(self):
         """Get meal-specific predictions"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         
         if not data or 'context' not in data:
@@ -759,7 +805,7 @@ class FoodImpactPredictor(Resource):
     @jwt_required()
     def post(self):
         """Predict how a specific food will impact user's glucose"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         data = request.get_json()
         
         if not data or 'food_name' not in data:
@@ -793,7 +839,7 @@ class UserProgress(Resource):
     @jwt_required()
     def get(self):
         """Get user's gamification progress"""
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         language = request.args.get('lang', 'en')
         
         # Get user data

@@ -1,8 +1,13 @@
+development
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from './LanguageContext';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import OnboardingStepper from './OnboardingStepper';
+
+import React, { useState } from 'react';
+import { useLanguage } from './LanguageContext';
+ main
 
 export default function Education() {
   const { language } = useLanguage();
@@ -52,10 +57,20 @@ export default function Education() {
     return () => { mounted = false; };
   }, [token]);
 
+  const common = { width: 36, height: 36, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
+  const Icons = {
+    basics: (
+      <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 7v5"/><path d="M12 16h.01"/></svg>
+    ),
+    foods: (
+      <svg {...common}><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/><path d="M12 3v7"/><path d="M9 6h6"/></svg>
+    ),
+  };
+
   const modules = {
     basics: {
       title: { en: 'Diabetes Basics', sw: 'Misingi ya Kisukari' },
-      icon: '🩺',
+      icon: 'basics',
       content: {
         en: [
           'Diabetes affects over 458,000 Kenyans.',
@@ -76,7 +91,7 @@ export default function Education() {
     },
     foods: {
       title: { en: 'Kenyan Foods', sw: 'Vyakula vya Kikenya' },
-      icon: '🥗',
+      icon: 'foods',
       content: {
         en: [
           'Sukuma wiki is excellent for diabetes.',
@@ -255,7 +270,7 @@ export default function Education() {
             {Object.entries(modules).map(([id, module]) => (
               <div key={id} className="card" style={{ cursor: 'pointer' }} onClick={() => setSelectedModule(id)}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '3rem' }}>{module.icon}</div>
+                  <div style={{ display: 'grid', placeItems: 'center', color: 'var(--cyan)' }}>{Icons[module.icon]}</div>
                   <h3>{module.title[language]}</h3>
                 </div>
               </div>
