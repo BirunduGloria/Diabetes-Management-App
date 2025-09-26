@@ -23,6 +23,25 @@ body {
   color: var(--text);
 }
 
+/* Landing page: white background, maintain font and navbar styling */
+.landing {
+  min-height: 100%;
+  background: #ffffff;
+  color: #0a0a0a; /* darker text for readability on white */
+}
+.landing .card,
+.landing .crumb-wrap {
+  background: #ffffff;
+  color: #0a0a0a;
+  border-color: #e5e7eb; /* light border for contrast on white */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.landing .accent-line { display: none; }
+.landing .btn.btn-outline { color: #0a0a0a; border-color: #d1d5db; }
+
+/* Keep navbar cyan regardless of page */
+.navbar { background: rgba(10,10,10,0.7); }
+
 /* Layout */
 .container {
   max-width: 980px;
