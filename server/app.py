@@ -12,13 +12,26 @@ from sqlalchemy import func
 # Local imports
 from config import app, db, api
 from models import User, Reading, Medication, Meal, Doctor, reading_meals, Reminder, EducationalTip, DoctorMessage, BMISnapshot
-from schema import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
-from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
-from Glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
-from Gamification import BADGES, DAILY_CHALLENGES, get_user_progress, check_badges, get_daily_challenges_status
-from educational_insights import get_personalized_insights, get_food_recommendations_by_status, get_glucose_trend
 
-from models import User, Reading, Medication, Meal, Doctor, reading_meals
+# Initialize database tables on startup
+with app.app_context():
+    try:
+        db.create_all()
+        print("✅ Database tables created/verified!")
+        
+        # Add basic doctors if none exist
+        if Doctor.query.count() == 0:
+            doctors = [
+                Doctor(name="Dr. Sarah Johnson", specialization="Endocrinology", phone="+254700123456"),
+                Doctor(name="Dr. Michael Chen", specialization="Internal Medicine", phone="+254700123457"),
+                Doctor(name="Dr. Amina Hassan", specialization="Family Medicine", phone="+254700123458"),
+            ]
+            for doctor in doctors:
+                db.session.add(doctor)
+            db.session.commit()
+            print("✅ Basic doctors seeded!")
+    except Exception as e:
+        print(f"⚠️ Database initialization error: {e}")
 from schema import UserSchema, ReadingSchema, MedicationSchema, MealSchema, DoctorSchema
 from kenyan_foods import KENYAN_FOODS, get_food_recommendations, get_diabetes_friendly_foods, get_foods_to_limit
 from Glucose_predictor import analyze_user_patterns, generate_predictive_alerts, get_meal_specific_predictions, get_food_impact_prediction
