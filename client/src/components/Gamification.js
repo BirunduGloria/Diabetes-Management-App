@@ -14,7 +14,8 @@ export default function Gamification() {
   const loadProgress = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/user-progress?lang=${language}`, {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/user-progress?lang=${language}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {

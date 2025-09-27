@@ -16,7 +16,8 @@ export default function DoctorMessages() {
   async function loadMessages() {
     setError(null);
     try {
-      const res = await fetch('/doctor-messages', { headers: { Authorization: `Bearer ${token}` } });
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/doctor-messages`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (res.ok) setMessages(data.messages || []);
       else setError(data.error || 'Failed to load messages');
@@ -31,7 +32,8 @@ export default function DoctorMessages() {
     async function loadDoctor() {
       if (!user?.doctor_id) { setDoctor(null); return; }
       try {
-        const res = await fetch(`/doctors/${user.doctor_id}/patients`);
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/doctors/${user.doctor_id}/patients`);
         const data = await res.json();
         if (res.ok) setDoctor(data.doctor);
       } catch {}
@@ -43,7 +45,8 @@ export default function DoctorMessages() {
   useEffect(() => {
     async function loadLatest() {
       try {
-        const res = await fetch('/dashboard', { headers: { Authorization: `Bearer ${token}` } });
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
         if (res.ok) setLatest(data.latest_reading || null);
       } catch {}
@@ -119,7 +122,8 @@ export default function DoctorMessages() {
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             setError(null);
             try {
-              const res = await fetch('/doctor-messages', {
+              const API_URL = process.env.REACT_APP_API_URL || '';
+              const res = await fetch(`${API_URL}/doctor-messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ message: values.message.trim(), is_emergency: values.is_emergency })

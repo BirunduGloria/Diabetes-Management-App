@@ -38,7 +38,8 @@ export default function Dashboard() {
       if (!user) return;
       if (!user.height_cm || !user.weight_kg) return; // needs profile data
       try {
-        const res = await fetch('/me/bmi', {
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/me/bmi`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -52,7 +53,8 @@ export default function Dashboard() {
     async function loadBmiHistory() {
       if (!token) return;
       try {
-        const res = await fetch('/bmi-history?limit=20', {
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/bmi-history?limit=20`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -66,7 +68,8 @@ export default function Dashboard() {
     async function loadDoctor() {
       if (!user?.doctor_id) return;
       try {
-        const res = await fetch('/doctors');
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/doctors`);
         if (res.ok) {
           const data = await res.json();
           const assignedDoctor = data.find(d => d.id === user.doctor_id);
@@ -80,7 +83,8 @@ export default function Dashboard() {
     async function loadDashboard() {
       if (!token) return;
       try {
-        const res = await fetch('/dashboard', {
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -95,7 +99,8 @@ export default function Dashboard() {
       if (!token) return;
       try {
         setInsightsLoading(true);
-        const res = await fetch(`/educational-insights?lang=${language || 'en'}` , {
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/educational-insights?lang=${language || 'en'}` , {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

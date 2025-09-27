@@ -30,15 +30,16 @@ export default function Onboarding() {
 
   useEffect(() => {
     async function checkProgress() {
+      const API_URL = process.env.REACT_APP_API_URL || '';
       try {
-        const r = await fetch('/readings', { headers: { Authorization: `Bearer ${token}` } });
+        const r = await fetch(`${API_URL}/readings`, { headers: { Authorization: `Bearer ${token}` } });
         if (r.ok) {
           const data = await r.json();
           setHasReading(Array.isArray(data) && data.length > 0);
         }
       } catch {}
       try {
-        const m = await fetch('/medications', { headers: { Authorization: `Bearer ${token}` } });
+        const m = await fetch(`${API_URL}/medications`, { headers: { Authorization: `Bearer ${token}` } });
         if (m.ok) {
           const data = await m.json();
           setHasMedication(Array.isArray(data) && data.length > 0);
@@ -62,7 +63,8 @@ export default function Onboarding() {
     setProfileError(null);
     setProfileLoading(true);
     try {
-      const res = await fetch('/me', {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/me`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ height_cm: height ? Number(height) : null, weight_kg: weight ? Number(weight) : null })
@@ -71,7 +73,7 @@ export default function Onboarding() {
       if (!res.ok) throw new Error(data.error || 'Failed to save');
       setProfileAdvice(data.advice || null);
       // Fetch BMI
-      const bmiRes = await fetch('/me/bmi', { headers: { Authorization: `Bearer ${token}` } });
+      const bmiRes = await fetch(`${API_URL}/me/bmi`, { headers: { Authorization: `Bearer ${token}` } });
       if (bmiRes.ok) {
         const bmiData = await bmiRes.json();
         setBmiInfo(bmiData);
@@ -89,9 +91,10 @@ export default function Onboarding() {
     setGError(null);
     setGSubmitting(true);
     try {
+      const API_URL = process.env.REACT_APP_API_URL || '';
       const dateStr = new Date().toISOString().slice(0,10);
       const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-      const res = await fetch('/readings', {
+      const res = await fetch(`${API_URL}/readings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ value: Number(gValue), date: dateStr, time: timeStr, context: gContext })

@@ -19,14 +19,15 @@ export default function FoodInsights() {
     setLoading(true);
     try {
       // Load food database
-      const foodsRes = await fetch('/kenyan-foods');
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const foodsRes = await fetch(`${API_URL}/kenyan-foods`);
       if (foodsRes.ok) {
         const foodsData = await foodsRes.json();
         setFoods(foodsData.foods || {});
       }
 
       // Load personalized recommendations
-      const recRes = await fetch(`/food-recommendations?lang=${language}`, {
+      const recRes = await fetch(`${API_URL}/food-recommendations?lang=${language}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (recRes.ok) {

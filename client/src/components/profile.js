@@ -37,7 +37,8 @@ export default function Profile() {
   useEffect(() => {
     async function loadDoctors() {
       try {
-        const res = await fetch('/doctors');
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/doctors`);
         if (!res.ok) return;
         const data = await res.json();
         setDoctors(data);
@@ -55,8 +56,9 @@ export default function Profile() {
   async function handleSubmit(values, { setSubmitting, setStatus }) {
     setStatus(null);
     try {
+      const API_URL = process.env.REACT_APP_API_URL || '';
       // First update base profile fields on /me
-      const res = await fetch('/me', {
+      const res = await fetch(`${API_URL}/me`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +76,7 @@ export default function Profile() {
       const { education, advice, ...userDataBase } = data;
 
       // Then update extended fields on /profile/enhanced
-      const enhancedRes = await fetch('/profile/enhanced', {
+      const enhancedRes = await fetch(`${API_URL}/profile/enhanced`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -20,7 +20,8 @@ export default function Medications() {
   const load = React.useCallback(async () => {
     setError(null);
     try {
-      const res = await fetch('/medications', {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/medications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -59,7 +60,8 @@ export default function Medications() {
   async function create(values, { setSubmitting, resetForm, setStatus }) {
     setStatus(null);
     try {
-      const res = await fetch('/medications', {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/medications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(values),
@@ -77,7 +79,8 @@ export default function Medications() {
 
   async function updateStatus(id, status) {
     try {
-      const res = await fetch(`/medications/${id}`, {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/medications/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status }),

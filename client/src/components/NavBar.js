@@ -20,7 +20,8 @@ export default function NavBar() {
     async function checkReadings() {
       if (!isAuthed) { setHasReading(false); return; }
       try {
-        const res = await fetch('/readings', { headers: { Authorization: `Bearer ${token}` } });
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/readings`, { headers: { Authorization: `Bearer ${token}` } });
         if (!mounted) return;
         if (res.ok) {
           const data = await res.json();

@@ -15,7 +15,8 @@ export default function Reminders() {
 
   const loadReminders = useCallback(async () => {
     try {
-      const res = await fetch('/reminders', { headers: { Authorization: `Bearer ${token}` } });
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/reminders`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (res.ok) setReminders(data.reminders || []);
       else setError(data.error || 'Failed to load reminders');
@@ -30,7 +31,8 @@ export default function Reminders() {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch('/reminders', {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/reminders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

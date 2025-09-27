@@ -14,7 +14,8 @@ export default function SmartAlerts() {
   const loadAlerts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/glucose-alerts?lang=${language}`, {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/glucose-alerts?lang=${language}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -37,7 +38,8 @@ export default function SmartAlerts() {
     if (!selectedFood) return;
     
     try {
-      const res = await fetch('/food-impact', {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/food-impact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

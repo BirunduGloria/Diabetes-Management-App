@@ -31,5 +31,6 @@ CORS(app, origins=[
     "http://localhost:3000",  # React development server
     "http://127.0.0.1:3000",  # React development server (alternative)
     "http://localhost:3001",
-   "https://diabetes-management-app-gamma.vercel.app"
+    "https://diabetes-management-app-gamma.vercel.app",
+    "*"  # Allow all origins for now - you can restrict this later
 ])
