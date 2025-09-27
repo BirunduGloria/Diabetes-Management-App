@@ -21,16 +21,21 @@ metadata = MetaData(naming_convention={
 db = SQLAlchemy(metadata=metadata)
 migrate = Migrate(app, db)
 db.init_app(app)
-
 api = Api(app)
 
 jwt = JWTManager(app)
 
 
-CORS(app, origins=[
-    "http://localhost:3000",  # React development server
-    "http://127.0.0.1:3000",  # React development server (alternative)
-    "http://localhost:3001",
-    "https://diabetes-management-app-gamma.vercel.app",
-    "*"  # Allow all origins for now - you can restrict this later
-])
+CORS(
+    app,
+    resources={r"/*": {"origins": [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://127.0.0.1:3002",
+        "https://diabetes-management-app-gamma.vercel.app",
+        "*"  # Allow all origins for now - you can restrict this later
+    ]}},
+    supports_credentials=True,
+)
