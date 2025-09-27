@@ -27,7 +27,8 @@ export default function OnboardingGuard({ requireProfile, requireReading, requir
       if (!token) return setHasReading(false);
       try {
         setLoading(true);
-        const res = await fetch('/readings', { headers: { Authorization: `Bearer ${token}` } });
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/readings`, { headers: { Authorization: `Bearer ${token}` } });
         if (!isMounted) return;
         if (res.ok) {
           const data = await res.json();

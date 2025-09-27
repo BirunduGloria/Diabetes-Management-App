@@ -8,6 +8,10 @@ export default function NavBar() {
   const { t, toggleLanguage, language } = useLanguage();
   const history = useHistory();
   const [hasReading, setHasReading] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === 'undefined') return 'dark';
+    return localStorage.getItem('theme') || 'dark';
+  });
   const profileComplete = Boolean(user?.height_cm && user?.weight_kg);
   const educationDone = typeof window !== 'undefined' && localStorage.getItem('education_done') === 'true';
 
@@ -31,6 +35,14 @@ export default function NavBar() {
     checkReadings();
     return () => { mounted = false; };
   }, [isAuthed, token]);
+
+  // Apply theme to document body
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const body = document.body;
+    if (theme === 'light') body.classList.add('theme-light'); else body.classList.remove('theme-light');
+    try { localStorage.setItem('theme', theme); } catch {}
+  }, [theme]);
 
   function handleLogout() {
     logout();
@@ -91,6 +103,13 @@ export default function NavBar() {
       {isAuthed && <NavLink to="/profile" activeClassName="active">{t('profile')}</NavLink>} */}
 
       <div className="spacer" />
+      <button
+        onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+        className="btn btn-outline"
+        title={theme === 'light' ? 'Switch to Dark' : 'Switch to Light'}
+      >
+        {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+      </button>
       <button 
         onClick={toggleLanguage} 
         className="btn btn-outline"

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
+const API_URL = process.env.REACT_APP_API_URL || '';
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -37,7 +39,7 @@ export function AuthProvider({ children }) {
     async function restore() {
       if (!token) return;
       try {
-        const res = await fetch('/check_session', {
+        const res = await fetch(`${API_URL}/check_session`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {

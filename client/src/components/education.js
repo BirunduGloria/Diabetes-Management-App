@@ -28,7 +28,8 @@ export default function Education() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch('/educational-insights', {
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        const res = await fetch(`${API_URL}/educational-insights`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -45,15 +46,14 @@ export default function Education() {
 
   // Prefetch dashboard to warm charts and recent data
   useEffect(() => {
-    let mounted = true;
     async function prefetchDashboard() {
       if (!token) return;
       try {
-        await fetch('/dashboard', { headers: { Authorization: `Bearer ${token}` } });
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        await fetch(`${API_URL}/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
       } catch {}
     }
     prefetchDashboard();
-    return () => { mounted = false; };
   }, [token]);
 
   const common = { width: 36, height: 36, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
@@ -135,7 +135,7 @@ export default function Education() {
         {!loading && insights && (
           <div className="grid-3" style={{ gap: 16 }}>
             {/* What to do when glucose is high */}
-            <div className="card" style={{ borderLeft: '4px solid #ef4444' }}>
+            <div className="card insight-card" style={{ borderLeft: '4px solid #ef4444' }}>
               <div style={{ padding: 12 }}>
                 <h3 style={{ marginTop: 0 }}>
                   {language === 'sw' ? 'Nini cha kufanya sukari ikiwa juu' : 'What to do when glucose is high'}
@@ -161,7 +161,7 @@ export default function Education() {
 
             {/* What to do when glucose is low */}
             {insights.latest_status === 'low' && (
-              <div className="card" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <div className="card insight-card" style={{ borderLeft: '4px solid #f59e0b' }}>
                 <div style={{ padding: 12 }}>
                   <h3 style={{ marginTop: 0 }}>
                     {language === 'sw' ? 'Nini cha kufanya sukari ikiwa chini' : 'What to do when glucose is low'}
@@ -178,7 +178,7 @@ export default function Education() {
 
             {/* Maintain normal glucose */}
             {(insights.latest_status === 'normal' || !insights.latest_status) && (
-              <div className="card" style={{ borderLeft: '4px solid #10b981' }}>
+              <div className="card insight-card" style={{ borderLeft: '4px solid #10b981' }}>
                 <div style={{ padding: 12 }}>
                   <h3 style={{ marginTop: 0 }}>
                     {language === 'sw' ? 'Dumisha sukari ya kawaida' : 'Maintain normal glucose'}
@@ -193,7 +193,7 @@ export default function Education() {
             )}
 
             {/* Foods to eat today (Kenyan-focused) */}
-            <div className="card" style={{ borderLeft: '4px solid #10b981' }}>
+            <div className="card insight-card" style={{ borderLeft: '4px solid #10b981' }}>
               <div style={{ padding: 12 }}>
                 <h3 style={{ marginTop: 0 }}>
                   {language === 'sw' ? 'Vyakula vya kula leo' : 'Foods to eat today'}
@@ -236,7 +236,7 @@ export default function Education() {
             </div>
 
             {/* Exercise tips */}
-            <div className="card" style={{ borderLeft: '4px solid #3b82f6' }}>
+            <div className="card insight-card" style={{ borderLeft: '4px solid #3b82f6' }}>
               <div style={{ padding: 12 }}>
                 <h3 style={{ marginTop: 0 }}>
                   {language === 'sw' ? 'Vidokezo vya mazoezi' : 'Exercise tips'}

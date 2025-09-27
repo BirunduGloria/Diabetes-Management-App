@@ -28,8 +28,8 @@ export default function Login() {
       setUser(data.user);
       setEducation(data.education || []);
       setAdvice(data.advice || { nutrition: [], exercise: [], medication: [], bmi_category: null });
-      const done = localStorage.getItem('onboarding_complete') === 'true';
-      history.push(done ? '/dashboard' : '/onboarding');
+      // After successful login, take user to profile to complete their information
+      history.push('/profile');
     } catch (e) {
       setStatus(e.message);
     } finally {

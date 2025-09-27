@@ -99,6 +99,9 @@ class User(db.Model):
         self._password_hash = password_hash.decode('utf-8')
 
     def authenticate(self, password):
+        # Safeguard: if no password hash is set (legacy/seeded user), deny authentication gracefully
+        if not self._password_hash:
+            return False
         return bcrypt.checkpw(
             password.encode('utf-8'),
             self._password_hash.encode('utf-8'))

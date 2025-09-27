@@ -7,6 +7,7 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime
+from sqlalchemy import func
 
 # Local imports
 from config import app, db, api
@@ -32,21 +33,22 @@ def index():
 # ---------------- Authentication ----------------
 class Signup(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json() or {}
         
         # Basic validation
         if not data.get('name') or not data.get('email') or not data.get('password'):
             return {'error': 'Name, email, and password are required'}, 400
         
         # Check if user already exists
-        if User.query.filter_by(email=data['email']).first():
+        email_norm = (data['email'] or '').strip().lower()
+        if User.query.filter(func.lower(User.email) == email_norm).first():
             return {'error': 'User with this email already exists'}, 400
         
         try:
             # Create new user
             user = User(
                 name=data['name'],
-                email=data['email']
+                email=email_norm
             )
             user.password_hash = data['password']  # This will trigger the setter
             # Optional diabetes_type at signup
@@ -110,12 +112,13 @@ class Signup(Resource):
 
 class Login(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json() or {}
         
         if not data.get('email') or not data.get('password'):
             return {'error': 'Email and password are required'}, 400
         
-        user = User.query.filter_by(email=data['email']).first()
+        email_norm = (data['email'] or '').strip().lower()
+        user = User.query.filter(func.lower(User.email) == email_norm).first()
         
         if user and user.authenticate(data['password']):
             access_token = create_access_token(identity=str(user.id))
@@ -905,7 +908,7 @@ api.add_resource(UserProgress, '/user-progress')
 class Dashboard(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
@@ -949,9 +952,15 @@ class Dashboard(Resource):
 class EducationalInsights(Resource):
     @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        try:
+            user_id = int(get_jwt_identity())
+        except Exception:
+            return {'error': 'Invalid token identity'}, 401
         user = User.query.get(user_id)
-        insights = get_personalized_insights(user_id)
+        try:
+            insights = get_personalized_insights(user_id)
+        except Exception as e:
+            return {'error': f'Failed to compute insights: {str(e)}'}, 400
 
         # Determine language if provided (default en)
         language = request.args.get('lang', 'en')
@@ -1103,6 +1112,36 @@ class ReminderById(Resource):
                 reminder.scheduled_time = datetime.strptime(data['scheduled_time'], '%H:%M').time()
             if 'frequency' in data:
                 reminder.frequency = data['frequency']
+            
+            db.session.commit()
+            return {'reminder': reminder.to_dict()}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 400
+    
+    @jwt_required()
+    def patch(self, id):
+        """Partial update of a reminder. Non-breaking addition for rubric PATCH requirement."""
+        user_id = get_jwt_identity()
+        reminder = Reminder.query.filter_by(id=id, user_id=user_id).first()
+        
+        if not reminder:
+            return {'error': 'Reminder not found'}, 404
+        
+        data = request.get_json() or {}
+        
+        try:
+            # Only update fields present in payload
+            if 'is_active' in data:
+                reminder.is_active = bool(data['is_active'])
+            if 'scheduled_time' in data and data['scheduled_time']:
+                reminder.scheduled_time = datetime.strptime(data['scheduled_time'], '%H:%M').time()
+            if 'frequency' in data and data['frequency']:
+                reminder.frequency = data['frequency']
+            if 'title' in data and data['title']:
+                reminder.title = data['title']
+            if 'message' in data:
+                reminder.message = data['message']
             
             db.session.commit()
             return {'reminder': reminder.to_dict()}, 200

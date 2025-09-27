@@ -58,10 +58,23 @@ export default function Readings() {
 
   const { t } = useLanguage();
 
+  // Initialize default date/time
+  const now = new Date();
+  const defaultDate = now.toISOString().slice(0, 10);
+  const curH = now.getHours();
+  const curM = now.getMinutes();
+  const defaultMeridiem = curH >= 12 ? 'PM' : 'AM';
+  const defaultTime24 = `${String(curH).padStart(2, '0')}:${String(curM).padStart(2, '0')}`;
+
+  // AM/PM selection for time input
+  const [meridiem, setMeridiem] = useState(defaultMeridiem);
+  const [reminderMeridiem, setReminderMeridiem] = useState('AM');
+
 
   const fetchReadings = useCallback(async () => {
     try {
-      const res = await fetch('/readings', {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/readings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -76,23 +89,23 @@ export default function Readings() {
 
   // Prefetch educational insights to warm up Education screen
   useEffect(() => {
-    let mounted = true;
     async function prefetchEducation() {
       if (!token) return;
       try {
-        await fetch('/educational-insights', {
+        const API_URL = process.env.REACT_APP_API_URL || '';
+        await fetch(`${API_URL}/educational-insights`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } catch {}
     }
     prefetchEducation();
-    return () => { mounted = false; };
   }, [token]);
 
   async function handleDelete(id) {
     if (!window.confirm('Delete this reading?')) return;
     try {
-      const res = await fetch(`/readings/${id}`, {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      const res = await fetch(`${API_URL}/readings/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -109,13 +122,30 @@ export default function Readings() {
   async function handleCreate(values, { setSubmitting, resetForm, setStatus }) {
     setStatus(null);
     try {
-      const res = await fetch('/readings', {
+      const API_URL = process.env.REACT_APP_API_URL || '';
+      // Convert time + meridiem to 24-hour HH:MM if needed
+      let hhmm = values.time;
+      if (!hhmm) throw new Error('Time is required');
+      let [hStr, mStr] = hhmm.split(':');
+      let h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10);
+      if (Number.isNaN(h) || Number.isNaN(m)) throw new Error('Invalid time');
+      // If user entered 1-12 hour, apply meridiem conversion. If >12, assume already 24h input and ignore meridiem.
+      if (h >= 1 && h <= 12) {
+        if (meridiem === 'PM' && h < 12) h += 12;
+        if (meridiem === 'AM' && h === 12) h = 0;
+      }
+      const time24 = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+
+      const payload = { ...values, time: time24 };
+
+      const res = await fetch(`${API_URL}/readings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Create failed');
@@ -125,7 +155,18 @@ export default function Readings() {
       // Optional: create a reminder and navigate to Education
       if (setReminder) {
         try {
-          await fetch('/reminders', {
+          // Convert reminder time based on reminderMeridiem
+          let [rhStr, rmStr] = reminderTime.split(':');
+          let rh = parseInt(rhStr, 10);
+          const rm = parseInt(rmStr, 10);
+          if (!Number.isNaN(rh) && !Number.isNaN(rm)) {
+            if (rh >= 1 && rh <= 12) {
+              if (reminderMeridiem === 'PM' && rh < 12) rh += 12;
+              if (reminderMeridiem === 'AM' && rh === 12) rh = 0;
+            }
+          }
+          const reminderTime24 = `${String(rh).padStart(2,'0')}:${String(rm).padStart(2,'0')}`;
+          await fetch(`${API_URL}/reminders`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -135,7 +176,7 @@ export default function Readings() {
               reminder_type: 'glucose',
               title: 'Next glucose check',
               message: 'Time to measure your blood sugar',
-              scheduled_time: reminderTime,
+              scheduled_time: reminderTime24,
               frequency: 'daily',
             }),
           });
@@ -164,7 +205,7 @@ export default function Readings() {
       <div className="card section">
         <h2 style={{ marginTop: 0 }}>{t('addReading')}</h2>
         <Formik
-          initialValues={{ value: '', date: '', time: '', context: '', notes: '' }}
+          initialValues={{ value: '', date: defaultDate, time: defaultTime24, context: '', notes: '' }}
           validationSchema={ReadingSchema}
           onSubmit={handleCreate}
         >
@@ -179,7 +220,17 @@ export default function Readings() {
               <div className="error"><ErrorMessage name="date" /></div>
 
               <label>{t('time')}</label>
-              <Field name="time" type="time" />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Field name="time" type="time" />
+                <select
+                  aria-label="AM/PM"
+                  value={meridiem}
+                  onChange={(e) => setMeridiem(e.target.value)}
+                >
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
               <div className="error"><ErrorMessage name="time" /></div>
 
               <label>{t('context')} ({t('optional')})</label>
@@ -203,7 +254,13 @@ export default function Readings() {
             {setReminder && (
               <div style={{ marginTop: 8 }}>
                 <label>Reminder Time</label>
-                <input type="time" value={reminderTime} onChange={(e) => setReminderTime(e.target.value)} />
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="time" value={reminderTime} onChange={(e) => setReminderTime(e.target.value)} />
+                  <select aria-label="Reminder AM/PM" value={reminderMeridiem} onChange={(e)=> setReminderMeridiem(e.target.value)}>
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
             )}
           </div>

@@ -46,7 +46,7 @@ function App() {
           <NavBar />
           <div className="container">
             <Switch>
-              <Route path="/Login">
+              <Route path="/login">
                 <Login />
               </Route>
               <Route path="/forgot-password">
