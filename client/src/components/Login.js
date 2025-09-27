@@ -17,7 +17,6 @@ export default function Login() {
   async function handleSubmit(values, { setSubmitting, setStatus }) {
     setStatus(null);
     try {
-      console.log('Attempting login to:', `${API_URL}/login`);
       const res = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
